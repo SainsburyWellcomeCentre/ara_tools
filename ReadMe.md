@@ -1,6 +1,6 @@
 # ARA Tools
 
-This is a collection of generic MATLAB functions for handling whole-brain volume data and associated sparse point data.
+This is a collection of fairly generic MATLAB functions for handling mouse whole-brain imaging data and associated sparse point data.
 "sparse" data are things such as clicked cell locations, traced neurite trees, or traced injections. 
 In particular, this package provides functions for relating these sparse data to the Allen Reference Atlas (ARA). 
 The package helps you perform the following operations:
@@ -11,8 +11,9 @@ The package helps you perform the following operations:
 4. Determining the ARA brain area associated with each sparse point.
 5. Extracting area outlines from the reference atlas that you can use for plotting. 
 
-Functions that are likely to be shared between all or most whole-brain anatomy projects should go here. 
-More specific functions (those related to a particular project) should not be in this repository. 
+*ARA Tools* is written in the Mrsic-Flogel lab and is written with our own data in mind. 
+Likely it will need adapting for other scenarios.
+
 
 **NOTE**: some examples and documentation are provided below, but not everything is documented on this page (yet). 
 All functions are documented, so please go through the code to see what's available. 
