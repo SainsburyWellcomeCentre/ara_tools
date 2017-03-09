@@ -1,0 +1,55 @@
+# THIS IS A YML file
+# Lines starting with "#" are comment lines
+
+
+
+# Provide the name of the animal with only alphanumeric characters [REQUIRED]
+# ==> You MUST leave a space after the ":" symbol for the asignment to work <===
+animal: XYZ123
+
+# A string defining what sort of data is this? e.g. "traced cells", "nuclear labeling", etc [REQUIRED]
+sparseDataType: traced cells
+
+# If there are no traced cells, no further information need be supplied. The file can stop here.
+
+
+# ------------------------------------------------------------------------------
+# All fields that follow are OPTIONAL
+
+
+# Notes - notes that you might want imported into MATLAB you can  write as follows
+# Don't use characters such as: :  , ; '
+notes: This was a cell I traced and I enjoyed doing it very much
+
+
+# Now list the properties of each traced cell on order. 
+# e.g. cell 01 corresponds to data in the first cell of the neurite_trees cell array
+
+
+
+# - - - - - - - - - - - - - - - - -
+# Only include the [cell 01] field if there is a traced cell here
+cell 01:
+  #Exclude from analysis [0 or 1] [0 by default]
+  # ==> You MUST indent these lines with two spaces for them to be nested under the cell ID <===
+  excludeFromAnalysis: 0
+  notes: cell is good
+
+  #Set to 1 if the cell's local axonal tree could not be completely traced [0 or 1] [0 by default]
+  localIncomplete: 0
+
+  #Whether the tree needed to be flipped along the dorso-ventral axis [0 or 1] [0 by default]
+  flipDV: 0
+
+# - - - - - - - - - - - - - - - - -
+cell 02:
+#If there is nothing here we assume that cell 2 is present and that it it should be included in the analysis an that it's completely traced locally
+
+
+
+# - - - - - - - - - - - - - - - - -
+#Note we don't have to have a cell 03 and we skip straight to 04
+cell 04:
+  #This cell is locally not completely traced but should be included in the analysis
+  localIncomplete: 1 
+  notes: cell is in a terrible state

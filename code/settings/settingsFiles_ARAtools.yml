@@ -1,0 +1,2 @@
+default: defaultSettings_ARAtools.yml
+user: ~/.defaultSettings_ARAtools.yml

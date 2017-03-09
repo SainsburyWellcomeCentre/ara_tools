@@ -1,0 +1,12 @@
+volFormat: mhd
+downSampledDir: downsampled
+extractedDataDir: sparsedata
+araDir: ~/tvoucan/Mrsic-Flogel/ReferenceAtlas/ARA_CCFv3/
+araSubDirFormat: ARA_%s_micron_mhd
+ara2sampleDir: ARA2sample
+sample2araDir: sample2ARA
+invertedMatName: inverted.mat
+sparseDataMatLogFname: exportedDataLog.mat
+removeMovingAndFixed: 1
+sparseDataLogName: downsampleData_log.txt
+dsVolLogName: downsampleVolume_log.txt

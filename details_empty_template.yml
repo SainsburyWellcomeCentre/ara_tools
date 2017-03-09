@@ -1,0 +1,25 @@
+
+# Provide the name of the animal with only alphanumeric characters [REQUIRED]
+animal: YH
+
+# A string defining what sort of data is this? e.g. "traced cells", "nuclear labeling", etc [REQUIRED]
+sparseDataType: traced cells
+
+# If there are no traced cells, no further information need be supplied. The file can stop here.
+
+
+# ------------------------------------------------------------------------------
+# All fields that follow are OPTIONAL
+notes: 
+
+
+
+
+# - - - - - - - - - - - - - - - - -
+# Only include the [cell 01] field if there is a traced cell here
+cell 01:
+  #Exclude from analysis [0 or 1] [0 by default]
+  excludeFromAnalysis: 0
+  localIncomplete: 0
+  flipDV: 0
+
