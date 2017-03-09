@@ -23,13 +23,11 @@ All functions are documented, so please go through the code to see what's availa
 
 ## Installation
 
-1. Either [download the zip](https://bitbucket.org/lasermouse/ara_tools/downloads) or (better) clone the repository
-in a Git client like [SmartGit](http://www.syntevo.com/smartgit/) or [SourceTree](https://www.sourcetreeapp.com).
-Cloning with git makes it easier to deploy updates.
+1. Clone the repository in a Git client like [SmartGit](http://www.syntevo.com/smartgit/) or [SourceTree](https://www.sourcetreeapp.com).
 2. You will need some or all of the dependencies listed at the bottom. Which ones you need depends on what you're doing. 
 e.g. you won't need the registration stuff to plot cells. 
 3. There has been limited testing of these tools on Windows. 
-4. You will need a copy of the Allen Atlas and the template brain in MHD format. One is included in the [downloads page](https://bitbucket.org/lasermouse/ara_tools/downloads). 
+4. You will need a copy of the Allen Atlas and the template brain in MHD format. One is included on [this page](http://mouse.vision/han2017). 
 Ask if you need a different version. 
 5. Add the contents of the `code` directory to your path. 
 
