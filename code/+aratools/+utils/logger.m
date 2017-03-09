@@ -5,7 +5,7 @@ function logger(err,logFileName)
     %
     %
     % Purpose
-    % The logger function writes full error traces to disk during syncAndCrunch.
+    % The logger function writes full error traces to disk.
     % These full traces aren't sent to Slack or e-mail to avoid bloat. 
     %
     %

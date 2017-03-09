@@ -1,9 +1,11 @@
 function refreshAllSparsePoints
-% Re-create all downsampled CSV files from goggleViewer .mat files
+% Re-build all downsampled CSV files from MaSIV .mat files
 %
+% function refreshAllSparsePoints
+%	
 % Purpose
-% Go through all experiment directories and re-create all the cell CSV files from goggleViewer
-% .mat files. 
+% Loop through all experiment directories and re-build all the cell 
+% CSV files from MaSIV .mat files. 
 % *** HARDCODED 25 MICRON ATLAS VOXEL SIZE ***
 %
 % Inputs

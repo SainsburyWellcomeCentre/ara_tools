@@ -5,8 +5,8 @@ function varargout = exportNeuriteTree(neuriteTree,fname,downSample)
 %
 %
 % Purpose
-%   The neurite trees are stored in a tree structure defined by the matlab-tree class
-% (see: https://github.com/raacampbell13/matlab-tree). This function allows the tree
+% The neurite trees are stored in a tree structure defined by the matlab-tree class
+% (see: https://github.com/raacampbell/matlab-tree). This function allows the tree
 % to be exported to a text file in a way that maintains the information describing 
 % the relationships between nodes. So the tree can be re-built in another programming 
 % language of the user's choice. 
@@ -17,7 +17,7 @@ function varargout = exportNeuriteTree(neuriteTree,fname,downSample)
 % 
 % Inputs
 % neuriteTree - an instance of the neurite tree class. (i.e. not the cell array
-% 				returned by goggleNeuriteTracer but one of its cells)
+%               returned by the MaSIV neurite tracer but one of its cells)
 % fname - path to the file that will contain the dumped tree. If empty no saving
 %         to disk is performed. 
 % downSample - a vector or length 2 defining how much to down-sample the tree in
@@ -41,22 +41,22 @@ function varargout = exportNeuriteTree(neuriteTree,fname,downSample)
 
 
 if ~strcmp(class(neuriteTree),'tree')
-	fprintf('neuriteTree should be of class "tree", it is of class %s\n',class(neuriteTree))
-	return
+    fprintf('neuriteTree should be of class "tree", it is of class %s\n',class(neuriteTree))
+    return
 end
 
 if nargin<2
-	fname = [];
+    fname = [];
 end
 
 if nargin<3
-	downSample=[1,1];
+    downSample=[1,1];
 end
 
 
 if isempty(fname) & nargout==0
-	fprintf('No outputs requested\n')
-	return
+    fprintf('No outputs requested\n')
+    return
 end
 
 
@@ -66,22 +66,22 @@ end
 treeAsTextDump = neuriteTree.dumptree(@(n) sprintf('%0.3f,%0.3f,%0.3f',n.zVoxel/downSample(2),n.xVoxel/downSample(1),n.yVoxel/downSample(1)));
 
 if length(treeAsTextDump)==0
-	fprintf('Something went wrong with the tree dump: no data were returned\n')
-	return
+    fprintf('Something went wrong with the tree dump: no data were returned\n')
+    return
 end
 
 
 %Save to a file 
 if ~isempty(fname)
-	fid = fopen(fname,'w+');
-	fprintf(fid,'%s',treeAsTextDump);
-	fclose(fid);
+    fid = fopen(fname,'w+');
+    fprintf(fid,'%s',treeAsTextDump);
+    fclose(fid);
 end
 
 
 
 %Return as a matrix if the user asked for this
 if nargout>0
-	varargout{1}=str2num(treeAsTextDump);
+    varargout{1}=str2num(treeAsTextDump);
 end
 

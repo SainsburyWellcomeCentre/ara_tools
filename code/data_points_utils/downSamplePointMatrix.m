@@ -8,7 +8,7 @@ function data=downSamplePointMatrix(data,downSampleAmount)
 % and downsamples this by downSampleAmount vector of length 2: [xy,z] or
 % by the degree of downsampling of the downsampled MHD file in the 
 % experiment ./downsampled directory. Cell locations and trees exported
-% by goggleViewer will already have been downsampled (see downsampleVolumeAndData)
+% by MaSIV will already have been downsampled (see downsampleVolumeAndData)
 % but if other data, e.g. locations of bright pixels, have been automatically
 % extracted then we will need to downsample them. 
 %

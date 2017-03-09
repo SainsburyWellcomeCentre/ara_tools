@@ -14,7 +14,7 @@ function varargout=pointsInARA(pointsData,upsampledTree)
 % Inputs
 % pointsData - one of: 
 %          a) the relative or absolute path to a csv file containing data exported 
-%          from a tree .mat file or a gogglePoint .yml file. The only constraint 
+%          from a tree .mat file or a MaSIV points .yml file. The only constraint 
 %          is that the last three columns of this file should be the z, x, and y
 %          locations of the data point. 
 %          ** If it was a tree AND we run in batch mode then we also resample the tree to **

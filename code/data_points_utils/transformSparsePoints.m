@@ -1,10 +1,10 @@
 function transformSparsePoints(csvName,params,fname)
-% Transform a sparse points csv exported from MaSIV using elastix params
+% Runs transformix on sparse points csv files exported from MaSIV using elastix params
 %
 % function transformSparsePoints(csvName,params,fname)
 %
 % Purpose
-% Transform sparse points or a tree exported from goggleViewer.
+% Run an Elastix transform on sparse points or a tree exported from MaSIV.
 % Useful for registering points to ARA following an inverse transform.
 % 
 %

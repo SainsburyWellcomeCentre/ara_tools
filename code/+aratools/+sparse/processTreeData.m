@@ -14,7 +14,7 @@ function [ARApoints,treeData]=processTreeData(points,varargin)
 % Inputs (required)
 % points - one of: 
 %          a) the relative or absolute path to a csv file containing data exported 
-%          from a tree .mat file or a gogglePoint .yml file. The only constraint 
+%          from a tree .mat file or a MaSIV .yml file. The only constraint 
 %          is that the last three columns of this file should be the z, x, andy y
 %          locations of the data point. 
 %          b) a path within a sample directory (BATCH MODE). e.g. 'downsampled/sample2ARA/'
@@ -85,27 +85,27 @@ useCachedAtlas = params.Results.useCachedAtlas;
 %-----------------------------------------------------------------------------------------------
 if isempty(strfind(points,'.csv'))
 
-	fprintf('ENTERING BATCH MODE\n')
+    fprintf('ENTERING BATCH MODE\n')
 
-	[allCells,summary,byAnimal,byCell] = listAllTracedCells(points);
+    [allCells,summary,byAnimal,byCell] = listAllTracedCells(points);
 
-	%recursive call of processTreeData
-	n=1;
+    %recursive call of processTreeData
+    n=1;
 
-	cellIDs = allCells.keys;
-	for ii=1:length(cellIDs)
-		fprintf('\n%d/%d. Getting data from %s\n',ii,length(cellIDs),allCells(cellIDs{ii}) )
-		tmp = aratools.sparse.processTreeData(allCells(cellIDs{ii}),varargin{:});
-		if isempty(tmp)
-			continue
-		end
-		tmp.details = byCell.(cellIDs{ii});
-		ARApoints(n) = tmp;
-		n=n+1;
-	end
+    cellIDs = allCells.keys;
+    for ii=1:length(cellIDs)
+        fprintf('\n%d/%d. Getting data from %s\n',ii,length(cellIDs),allCells(cellIDs{ii}) )
+        tmp = aratools.sparse.processTreeData(allCells(cellIDs{ii}),varargin{:});
+        if isempty(tmp)
+            continue
+        end
+        tmp.details = byCell.(cellIDs{ii});
+        ARApoints(n) = tmp;
+        n=n+1;
+    end
 
-	fprintf('Added %d traced cells\n',n-1)
-	return
+    fprintf('Added %d traced cells\n',n-1)
+    return
 
 end %if isempty(strfind(points,'.csv'))
 %-----------------------------------------------------------------------------------------------
@@ -118,25 +118,25 @@ end %if isempty(strfind(points,'.csv'))
 ARApoints=struct;
 
 if ~exist(points,'file')
-	fprintf('%s: can not find points file %s. Quitting\n', mfilename, points)
-	return
+    fprintf('%s: can not find points file %s. Quitting\n', mfilename, points)
+    return
 end
 
 %generate ARApoints file path to load
 pathToMAT = strrep(points,'.csv','_pointsInARA.mat');
 if ~exist(pathToMAT,'file')
-	fprintf('No file %s. Skipping. Did you run pointsInARA?\n',pathToMAT)
-	ARApoints=[];
-	return
+    fprintf('No file %s. Skipping. Did you run pointsInARA?\n',pathToMAT)
+    ARApoints=[];
+    return
 end
 
 treeData=exportedCSV2tree(points);
 load(pathToMAT) %Loads ARApoints 
 
 if length(treeData.Node) ~= length(ARApoints.pointsInARA.rawSparseData.ARAindex)
-	fprintf('Imported tree is of length %d and ARApoints is of length %d. They must be equal. Skipping.\n',...
-		length(treeData.Node),length(ARApoints.pointsInARA.rawSparseData.ARAindex))
-	return
+    fprintf('Imported tree is of length %d and ARApoints is of length %d. They must be equal. Skipping.\n',...
+        length(treeData.Node),length(ARApoints.pointsInARA.rawSparseData.ARAindex))
+    return
 end
 
 
@@ -145,7 +145,7 @@ voxelSize = str2num(ARApoints.voxelSize);
 segments = treeData.getsegments;
 d=0;
 for thisSegment=segments
-	d = d+pathDistance(treeData,thisSegment{1},voxelSize);
+    d = d+pathDistance(treeData,thisSegment{1},voxelSize);
 end
 ARApoints.totalDistance=d;
 
@@ -170,9 +170,9 @@ upSampledPoints = round(upSampledPoints);
             length(ARApoints.rawSparseData), length(upSampledPoints), details.upSampleResolution)
 
 ARApoints.pointsInARA.upSampledPoints = aratools.sparse.assignToARA(ARApoints,upSampledPoints,...
-	'details',details, ...
-	'useCachedAtlas',useCachedAtlas, ...
-	'dataColumns',ARApoints.rawSparseDataColumns-2);
+    'details',details, ...
+    'useCachedAtlas',useCachedAtlas, ...
+    'dataColumns',ARApoints.rawSparseDataColumns-2);
 
 
 
@@ -183,18 +183,18 @@ uInd = unique(ARApoints.pointsInARA.rawSparseData.ARAindex);
 %Check whether there are values in the raw data that are not in the upsampled data. 
 delta=setdiff(uInd,uUp);
 if ~isempty(delta)
-	fprintf('*** WARNING: %s finds that points in original data not present in the upsampled data. ***\n',mfilename)
-	for ii=1:length(delta)
-		fprintf('\tArea %d (%s)\n',delta(ii), structureID2name(delta(ii)))
-	end
+    fprintf('*** WARNING: %s finds that points in original data not present in the upsampled data. ***\n',mfilename)
+    for ii=1:length(delta)
+        fprintf('\tArea %d (%s)\n',delta(ii), structureID2name(delta(ii)))
+    end
 end
 
 
 %log that we used the cached atlas if this was requested
 if useCachedAtlas
-	ATLAS = aratools.atlascacher.getCachedAtlas;
-	ATLAS.atlasVolume = [];
-	ARApoints.atlas = ATLAS;
+    ATLAS = aratools.atlascacher.getCachedAtlas;
+    ATLAS.atlasVolume = [];
+    ARApoints.atlas = ATLAS;
 end
 
 
@@ -202,13 +202,13 @@ end
 
 
 function d=pathDistance(treeData,pth,voxelSize)
-	%Sum the euclidean distance along the path of points defined by pth
-	d=0;
+    %Sum the euclidean distance along the path of points defined by pth
+    d=0;
 
-	for ii=1:length(pth)-1
-		m = [treeData.Node{pth(ii)};
-			treeData.Node{pth(1+ii)}];
-		d=d+pdist(m*voxelSize);
-	end
-	d=round(d);
+    for ii=1:length(pth)-1
+        m = [treeData.Node{pth(ii)};
+            treeData.Node{pth(1+ii)}];
+        d=d+pdist(m*voxelSize);
+    end
+    d=round(d);
 

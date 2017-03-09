@@ -13,7 +13,7 @@ function [ARApoints,treeData]=getLeavesInARA(points,labels)
 % Inputs
 % points - one of: 
 %          a) the relative or absolute path to a csv file containing data exported 
-%          from a tree .mat file or a gogglePoint .yml file. The only constraint 
+%          from a tree .mat file or a MaSIV points .yml file. The only constraint 
 %          is that the last three columns of this file should be the z, x, andy y
 %          locations of the data point. 
 %          b) a path within a sample directory (BATCH MODE). e.g. 'downsampled/sample2ARA/'
