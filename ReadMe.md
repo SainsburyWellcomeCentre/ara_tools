@@ -44,7 +44,7 @@ Clone them and add to your path.
 - [matlab-tree](https://github.com/raacampbell/matlab-tree)
 
 ## Using the toolbox
-See the [Wiki](https://bitbucket.org/lasermouse/ara_tools/wiki/Home) for documentation on using the tools. 
+See the [Wiki](https://github.com/BaselLaserMouse/ara_tools/wiki) for documentation on using the tools. 
 
 ## Further info
 [ARA white paper from the Allen Institute](http://help.brain-map.org/download/attachments/2818171/MouseCCF.pdf)
