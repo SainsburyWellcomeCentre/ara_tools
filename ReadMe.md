@@ -1,38 +1,31 @@
 # ARA Tools
 
 <img src="https://github.com/BaselLaserMouse/ara_tools/wiki/images/RegSchematicAssembled.png" />
-This is a collection of fairly generic MATLAB functions for handling mouse whole-brain imaging data and associated sparse point data.
-"sparse" data are things such as clicked cell locations, traced neurite trees, or traced injections. 
-In particular, this package provides functions for relating these sparse data to the Allen Reference Atlas (ARA). 
-The package helps you perform the following operations:
 
-1. Downsampling sample brain volumes to the ARA voxel size. 
+
+### What does it do?
+This is a collection of MATLAB functions for handling mouse whole-brain imaging data and associated "sparse" point data such as cell locations, traced neurite trees, or traced projections from a bulk injection. 
+This package provides functions for relating these sparse data to the Allen Reference Atlas (ARA):
+
+1. Downsampling full-resolution brain volumes to the ARA voxel size. 
 2. Downsampling associated sparse data to the ARA voxel size and exporting of these data to a csv file.
 3. Registering the sample brain and sparse data to the ARA: both sample -> ARA and ARA -> sample transformations.
 4. Determining the ARA brain area associated with each sparse point.
 5. Extracting area outlines from the reference atlas that you can use for plotting. 
 
-*ARA Tools* is written in the Mrsic-Flogel lab and is written with our own data in mind. 
-Likely it will need adapting for other scenarios.
+### Who is it for?
+*ARA Tools* is written in the [Mrsic-Flogel lab](http://mouse.vision) with our data in mind.
+In places it might expect the raw data were stitched using [StitchIt](https://github.com/BaselLaserMouse/StitchIt), so you may need to adapt our code for your own work.
 
-
-**NOTE**: some examples and documentation are provided below, but not everything is documented on this page (yet). 
-All functions are documented, so please go through the code to see what's available. 
-
-
-
-
-## Installation
+### Installation
 
 1. Clone the repository in a Git client like [SmartGit](http://www.syntevo.com/smartgit/) or [SourceTree](https://www.sourcetreeapp.com).
-2. You will need some or all of the dependencies listed at the bottom. Which ones you need depends on what you're doing. 
+2. You will need some or all of the dependencies listed below. Which ones you need depends on what you're doing. 
 e.g. you won't need the registration stuff to plot cells. 
-3. There has been limited testing of these tools on Windows. 
-4. You will need a copy of the Allen Atlas and the template brain in MHD format. One is included on [this page](http://mouse.vision/han2017). 
-Ask if you need a different version. 
-5. Add the contents of the `code` directory to your path. 
+3. You will need a copy of the Allen Atlas and the template brain in MHD format. One is included on [this page](http://mouse.vision/han2017). 
+5. Add the contents of the `code` directory to your MATLAB path. 
 
-## Dependencies
+### Dependencies
 ARA tools depends on the following MATLAB packages. 
 Clone them and add to your path.
 
@@ -44,8 +37,16 @@ Clone them and add to your path.
 - [MelastiX](https://github.com/raacampbell/matlab_elastix) (if you need to register brains to the ARA)
 - [matlab-tree](https://github.com/raacampbell/matlab-tree)
 
-## Using the toolbox
+
+### Using the toolbox
 See the [Wiki](https://github.com/BaselLaserMouse/ara_tools/wiki) for documentation on using the tools. 
 
-## Further info
+
+### Related projects
+
+* [ClearMap](https://github.com/ChristophKirst/ClearMap)
+* [aMAP](https://github.com/SainsburyWellcomeCentre/aMAP/wiki)
+
+
+### Further info
 [ARA white paper from the Allen Institute](http://help.brain-map.org/download/attachments/2818171/MouseCCF.pdf)
