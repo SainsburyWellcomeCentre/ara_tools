@@ -1,5 +1,6 @@
 # ARA Tools
 
+<img src="https://github.com/BaselLaserMouse/ara_tools/wiki/images/RegSchematicAssembled.png" />
 This is a collection of fairly generic MATLAB functions for handling mouse whole-brain imaging data and associated sparse point data.
 "sparse" data are things such as clicked cell locations, traced neurite trees, or traced injections. 
 In particular, this package provides functions for relating these sparse data to the Allen Reference Atlas (ARA). 
