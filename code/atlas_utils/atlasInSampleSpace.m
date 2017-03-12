@@ -22,12 +22,12 @@ S=settings_handler('settingsFiles_ARAtools.yml');
 downsampleDir = fullfile(pwd,S.downSampledDir);
 
 if ~exist(downsampleDir,'dir')
-	fprintf('Failed to find downsampled directory %s\n', downsampleDir), return
+    fprintf('Failed to find downsampled directory %s\n', downsampleDir), return
 end
 
 ara2sampleDir = fullfile(downsampleDir,S.ara2sampleDir);
 if ~exist(ara2sampleDir,'dir')
-	fprintf('Failed to find directory containing registration parameters: %s\n', ara2sampleDir), return
+    fprintf('Failed to find directory containing registration parameters: %s\n', ara2sampleDir), return
 end
 
 
@@ -55,24 +55,24 @@ params = dir(fullfile(ara2sampleDir,'TransformParameters.*.txt'));
 params = flipud(params);
 
 for ii=1:length(params)
-	fprintf('Copying %s to %s\n',params(ii).name,outputDir)
-	copyfile(fullfile(ara2sampleDir,params(ii).name), outputDir)
+    fprintf('Copying %s to %s\n',params(ii).name,outputDir)
+    copyfile(fullfile(ara2sampleDir,params(ii).name), outputDir)
 end
 
 %Modify the parameter files so that they chain together correctly: the files should point to the new copied locations. 
 for ii=1:length(params)-1
     changeParameterInElastixFile(fullfile(outputDir,params(ii).name), ...
-    							'InitialTransformParametersFileName', ...
-    							fullfile(outputDir,params(ii+1).name))
+                                'InitialTransformParametersFileName', ...
+                                fullfile(outputDir,params(ii+1).name))
 end
 
 %stop the interpolation and make the result image pixel type an int
 for ii=1:length(params)-1
     changeParameterInElastixFile(fullfile(outputDir,params(ii).name), ...
-    							'FinalBSplineInterpolationOrder', '0');
+                                'FinalBSplineInterpolationOrder', '0');
 
     changeParameterInElastixFile(fullfile(outputDir,params(ii).name), ...
-    							'ResultImagePixelType', 'int');
+                                'ResultImagePixelType', 'int');
 end
 
 %build the command. 

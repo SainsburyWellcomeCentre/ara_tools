@@ -1,7 +1,7 @@
 function treeData=exportedCSV2tree(fname)
 % re-import a tree structrue that was exported as a csv file
 %
-% function treeData=exportedCSV2tree(fname)	
+% function treeData=exportedCSV2tree(fname)    
 %
 % Purpose
 % re-import a tree from a csv file. Useful if the tree data were 
@@ -20,8 +20,8 @@ function treeData=exportedCSV2tree(fname)
 
 
 if ~exist(fname)
-	fprintf('%s - Can not find %s\n',mfilename,fname)
-	return
+    fprintf('%s - Can not find %s\n',mfilename,fname)
+    return
 end
 
 
@@ -31,6 +31,6 @@ data=csvread(fname);
 treeData = tree(data(1,3:end));
 
 for ii=2:size(data,1)
-	prevNode = data(ii,2);
-	treeData = treeData.addnode(prevNode,data(ii,3:end));
+    prevNode = data(ii,2);
+    treeData = treeData.addnode(prevNode,data(ii,3:end));
 end

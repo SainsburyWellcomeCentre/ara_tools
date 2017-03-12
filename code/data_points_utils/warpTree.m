@@ -23,9 +23,9 @@ fprintf('DEPRECATED: see transformSparsePoints.m\n')
 
 
 if isstr(csvName) & exist(csvName)
-	data = csvread(csvName);
+    data = csvread(csvName);
 else
-	fprintf('csvName should be a valid path to a csv file')
+    fprintf('csvName should be a valid path to a csv file')
 end
 
 

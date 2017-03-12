@@ -17,9 +17,9 @@ function varargout=checkRegisteredAtlasAreas(registered,atlas)
 % registered - a) relative or absolute path to the registered atlas
 %              b) atlas volume read in with mhd_read
 % atlas - [optional]
-% 		  a) relative or absolute path to the original atlas image
+%           a) relative or absolute path to the original atlas image
 %         b) original atlas volume read in with mhd_read
-%		  c) empty or missing: the default image is read
+%          c) empty or missing: the default image is read
 %
 %
 % Outputs
@@ -31,24 +31,24 @@ function varargout=checkRegisteredAtlasAreas(registered,atlas)
 
 
 if nargin<2 | isempty(atlas)
-	[~,atlas]=getARAfnames;
+    [~,atlas]=getARAfnames;
 end
 
 
 if isstr(registered)
-	if ~exist(registered,'file')
-		fprintf('Can not find file %s\n',registered)
-		return
-	end
-	registered = mhd_read(registered);
+    if ~exist(registered,'file')
+        fprintf('Can not find file %s\n',registered)
+        return
+    end
+    registered = mhd_read(registered);
 end
 
 if isstr(atlas)
-	if ~exist(atlas,'file')
-		fprintf('Can not find file %s\n',atlas)
-		return
-	end
-	atlas = mhd_read(atlas);
+    if ~exist(atlas,'file')
+        fprintf('Can not find file %s\n',atlas)
+        return
+    end
+    atlas = mhd_read(atlas);
 end
 
 
@@ -58,13 +58,13 @@ uRegis = unique(registered(:));
 
 
 if length(uAtlas) == length(uRegis)
-	fprintf('The number of brain areas is identical between the two files\n')
-	return
+    fprintf('The number of brain areas is identical between the two files\n')
+    return
 end
 
 if length(uRegis)>length(uAtlas)
-	fprintf('The registered atlas contains areas not found in the atlas. ODD.\n')
-	return
+    fprintf('The registered atlas contains areas not found in the atlas. ODD.\n')
+    return
 end
 
 %Load the brain area names
@@ -77,21 +77,21 @@ fprintf('The following areas are missing from the registered atlas:\n')
 ind = [flattened{:,1}];
 missingIndsInFlattened = [];
 for ii=1:length(uAtlas)
-	f=find(uRegis==uAtlas(ii));
-	if ~isempty(f)
-		continue
-	end
+    f=find(uRegis==uAtlas(ii));
+    if ~isempty(f)
+        continue
+    end
 
-	f=find(ind==uAtlas(ii));
-	fprintf('%d. %s\n', uAtlas(ii), flattened{f,4})
+    f=find(ind==uAtlas(ii));
+    fprintf('%d. %s\n', uAtlas(ii), flattened{f,4})
 
-	if nargout>0
-		missingIndsInFlattened(length(missingIndsInFlattened)+1) = f;
-	end
+    if nargout>0
+        missingIndsInFlattened(length(missingIndsInFlattened)+1) = f;
+    end
 
 end
 
 
 if nargout>0
-	varargout{1}=flattened(missingIndsInFlattened,:);
+    varargout{1}=flattened(missingIndsInFlattened,:);
 end

@@ -28,7 +28,7 @@ function mhdFile = getDownSampledMHDFile(expDir)
 
 
 if nargin==0 | isempty(expDir)
-	expDir=['.',filesep];
+    expDir=['.',filesep];
 end
 
 
@@ -36,22 +36,22 @@ mhdFile=[];
 S=settings_handler('settingsFiles_ARAtools.yml');
 
 if strcmp(expDir,S.downSampledDir)
-	%This catches a silly corner case
-	expDir=['.',filesep];
+    %This catches a silly corner case
+    expDir=['.',filesep];
 end
 
 
 downsampleDir=fullfile(expDir,S.downSampledDir);
 
 if ~exist(downsampleDir,'dir')
-	fprintf('%s - Can not find directory "%s"\n', mfilename, downsampleDir), return
+    fprintf('%s - Can not find directory "%s"\n', mfilename, downsampleDir), return
 end
 D=dir(fullfile(downsampleDir,'ds*_*_*.mhd'));
 if length(D)==0
-	fprintf('%s - No appropriate .mhd files in %s\n', mfilename, downsampleDir), return
+    fprintf('%s - No appropriate .mhd files in %s\n', mfilename, downsampleDir), return
 end
 if length(D)>1
-	fprintf('Found %d .mhd files in %s. Expected 1.\n', length(D), downsampleDir), return
+    fprintf('Found %d .mhd files in %s. Expected 1.\n', length(D), downsampleDir), return
 end
 
 mhdFile = D.name;

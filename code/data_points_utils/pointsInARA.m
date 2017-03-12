@@ -1,4 +1,4 @@
-function varargout=pointsInARA(pointsData,upsampledTree)
+ function varargout=pointsInARA(pointsData,upsampledTree)
 % generate a structure listing the brain area associated with each sparse data point
 %
 %

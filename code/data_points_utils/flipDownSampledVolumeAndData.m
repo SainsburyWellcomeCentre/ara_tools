@@ -22,8 +22,8 @@ function flipDownSampledVolumeAndData(dim,doNotFlipVolume,doNotFlipData)
 %       b) rotation : 90 means rotate by 90 degrees clockwise, 180 means 
 %          rotate by 180 degrees and 270 means rotate by 270 degrees clockwise. Vectors 
 %          are processed in order.
-%     	c) swapping axes: if two axes are tagged by -1 they are swapped. The third value 
-%  		   must be zero.
+%         c) swapping axes: if two axes are tagged by -1 they are swapped. The third value 
+%             must be zero.
 % doNotFlipVolume - [optional, 0 by default]. If 1 we do not flip the volume.
 % doNotFlipData - [optional, 0 by default]. If 1 we do not flip the sparse data.
 %     
@@ -50,42 +50,42 @@ function flipDownSampledVolumeAndData(dim,doNotFlipVolume,doNotFlipData)
 % Rob Campbell - Basel 2015
 
 if nargin==0
-	help(mfilename)
-	return
+    help(mfilename)
+    return
 end
 
 if nargin<2 | isempty(doNotFlipVolume)
-	doNotFlipVolume=0;
+    doNotFlipVolume=0;
 end
 
 if nargin<3 | isempty(doNotFlipData)
-	doNotFlipData=0;
+    doNotFlipData=0;
 end
 
 
 if ~iscell(dim)
-	dim = {dim};
+    dim = {dim};
 end
 
 %Error check
 for ii=1:length(dim)
-	tmp=dim{ii};
+    tmp=dim{ii};
 
-	f=find(tmp==-1);
-	if length(f)==1 | length(f)==3
-		error('only two -1 per vector are allowed')
-	elseif length(f)==2
-		if length(find(tmp==0)) ~= 1
-			error('third number of a swap axis vector must be zero')
-		end
-	end
+    f=find(tmp==-1);
+    if length(f)==1 | length(f)==3
+        error('only two -1 per vector are allowed')
+    elseif length(f)==2
+        if length(find(tmp==0)) ~= 1
+            error('third number of a swap axis vector must be zero')
+        end
+    end
 
 end
 
 
 mhdName=getDownSampledMHDFile;
 if isempty(mhdName)
-	return
+    return
 end
 
 S=settings_handler('settingsFiles_ARAtools.yml');
@@ -103,24 +103,24 @@ fprintf(['Loaded MHD volume with dimensions ',dimString,'\n'], size(mhdVol))
 
 initialDataDims=cell(size(data)); %store the size of the data arrays here, so we can generate an error if they change
 for ii=1:length(data)
-	%The +(size(data,2)-3) handles the fact that tree data have 5 columns 
-	%with voxel position in cols 3 to 5 but cell location data have just 
-	%the three voxel colummns.
-	initialDataDims{ii} = size(data{ii});
-	initCols = size(data{ii},2)-3;
-	data{ii}(:,1+initCols:end) = data{ii}(:,[3,2,1]+initCols);
+    %The +(size(data,2)-3) handles the fact that tree data have 5 columns 
+    %with voxel position in cols 3 to 5 but cell location data have just 
+    %the three voxel colummns.
+    initialDataDims{ii} = size(data{ii});
+    initCols = size(data{ii},2)-3;
+    data{ii}(:,1+initCols:end) = data{ii}(:,[3,2,1]+initCols);
 end
 
 fprintf('Loaded %d sparse data set',length(data))
 if length(data)==1
-	fprintf(':\n')
+    fprintf(':\n')
 else
-	fprintf('s:\n')
+    fprintf('s:\n')
 end
 
 for ii=1:length(data)
-	initCols = size(data{ii},2)-3;
-	fprintf('%s has points with a maximum range of x: %0.2f, y: %0.2f, z: %0.2f\n', fnames{ii}, max(data{ii}(:,1+initCols:end)) )
+    initCols = size(data{ii},2)-3;
+    fprintf('%s has points with a maximum range of x: %0.2f, y: %0.2f, z: %0.2f\n', fnames{ii}, max(data{ii}(:,1+initCols:end)) )
 end
 
 fprintf('\n')
@@ -128,74 +128,74 @@ fprintf('\n')
 
 %let's do the reshuffle!
 for ii=1:length(dim)
-	tmp=dim{ii};
-	if length(tmp)>ndims(mhdVol)
-		error('data manipulation vector has a length of %d but the MHD volume has a length of only %d',...
-			length(tmp),ndims(mhdVol))
-	end
+    tmp=dim{ii};
+    if length(tmp)>ndims(mhdVol)
+        error('data manipulation vector has a length of %d but the MHD volume has a length of only %d',...
+            length(tmp),ndims(mhdVol))
+    end
 
-	if any(tmp==-1)
-		%swap volume axes
-		f=find(tmp==-1);
-		dimOrder=1:ndims(mhdVol);
-		dimOrder(f)=fliplr(f);
-		fprintf('Doing volume permutation between axes %d and %d\n',dimOrder(f))
-		mhdVol = permute(mhdVol,dimOrder);
+    if any(tmp==-1)
+        %swap volume axes
+        f=find(tmp==-1);
+        dimOrder=1:ndims(mhdVol);
+        dimOrder(f)=fliplr(f);
+        fprintf('Doing volume permutation between axes %d and %d\n',dimOrder(f))
+        mhdVol = permute(mhdVol,dimOrder);
 
-		%swap sparse data
-		for d=1:length(data)
-			fprintf('Swapping columns %d and %d from file %s\n',dimOrder(f),fnames{d})
-			data{d} = data{d}(:,dimOrder);
-		end
-		continue
-	end
-
-
-	for jj=1:length(tmp)
-		t=tmp(jj);
-		if t==0
-			continue
-		end
-
-		%These are the axes along which we need to work
-		volDim = jj;
-
-		if t==1
-			%flip this volume axis
-			fprintf('Flipping dimension %d in volume\n',jj)
-			mhdVol = flipdim(mhdVol,jj);
-
-			%flip this sparse data axis
-			for d=1:length(data)
-				fprintf('Flipping data in column %d in file %s\n',jj,fnames{d})
-				initCols = size(data{d},2)-3;
-				data{d}(:,jj+initCols) = flipSparsePoints(data{d}(:,jj+initCols),size(mhdVol,jj));
-			end
+        %swap sparse data
+        for d=1:length(data)
+            fprintf('Swapping columns %d and %d from file %s\n',dimOrder(f),fnames{d})
+            data{d} = data{d}(:,dimOrder);
+        end
+        continue
+    end
 
 
-		elseif t==0
-			continue
-		elseif t>1
-			fprintf('Can not handle rotation yet. Hope I never need to.')
-			continue
-		end
+    for jj=1:length(tmp)
+        t=tmp(jj);
+        if t==0
+            continue
+        end
 
-	end
+        %These are the axes along which we need to work
+        volDim = jj;
+
+        if t==1
+            %flip this volume axis
+            fprintf('Flipping dimension %d in volume\n',jj)
+            mhdVol = flipdim(mhdVol,jj);
+
+            %flip this sparse data axis
+            for d=1:length(data)
+                fprintf('Flipping data in column %d in file %s\n',jj,fnames{d})
+                initCols = size(data{d},2)-3;
+                data{d}(:,jj+initCols) = flipSparsePoints(data{d}(:,jj+initCols),size(mhdVol,jj));
+            end
+
+
+        elseif t==0
+            continue
+        elseif t>1
+            fprintf('Can not handle rotation yet. Hope I never need to.')
+            continue
+        end
+
+    end
 
 end
 
 %Put the data columns back to z,x,y from x,y,z
 for ii=1:length(data)
-	initCols = size(data{ii},2)-3;
-	data{ii}(:,1+initCols:end) = data{ii}(:,[3,2,1]+initCols);
+    initCols = size(data{ii},2)-3;
+    data{ii}(:,1+initCols:end) = data{ii}(:,[3,2,1]+initCols);
 end
 
 
 %Check that no sparse data have changed size
 for ii=1:length(data)
-	if 	~all(size(data{ii}) ==	initialDataDims{ii})
-		error('\n * Data dimensions have changed for file %s!\n * Not saving. Not changing volume on disk. Quitting.',fnames{ii});
-	end
+    if     ~all(size(data{ii}) ==    initialDataDims{ii})
+        error('\n * Data dimensions have changed for file %s!\n * Not saving. Not changing volume on disk. Quitting.',fnames{ii});
+    end
 end
 
 fprintf('\n')
@@ -203,16 +203,16 @@ fprintf('\n')
 
 %Overwrite the sparse data
 if ~doNotFlipData
-	for ii=1:length(data)
-		fprintf('Replacing %s\n',fnames{ii})
-		csvwrite(fnames{ii},data{ii})
-	end
+    for ii=1:length(data)
+        fprintf('Replacing %s\n',fnames{ii})
+        csvwrite(fnames{ii},data{ii})
+    end
 end
 
 %overwrite the image volume
 if ~doNotFlipVolume
-	mhd_write(mhdVol,mhdName)
-	fprintf('Replacing %s\n',mhdName)
+    mhd_write(mhdVol,mhdName)
+    fprintf('Replacing %s\n',mhdName)
 end
 
 %show lasagna commands to screen 
@@ -246,16 +246,16 @@ function data = flipSparsePoints(data,dimLength)
 
 f=find(data>dimLength);
 if f>0
-	fprintf('\n * Found %d data values in vector that are larger than %d, which is supposed to be the dimension''s largest value\n',length(f),dimLength)
-	d=data(f);
-	fprintf(' * Values range from %0.2f to %0.2f\n\n',min(d),max(d))
-	error('')
+    fprintf('\n * Found %d data values in vector that are larger than %d, which is supposed to be the dimension''s largest value\n',length(f),dimLength)
+    d=data(f);
+    fprintf(' * Values range from %0.2f to %0.2f\n\n',min(d),max(d))
+    error('')
 end
 
 data = abs(data-dimLength)+1; %perform the flip
 
 f=find(data<0.5);
 if f>0
-	fprintf('Warning, found %d voxel coordinates that will round down to zero\n', length(f))
+    fprintf('Warning, found %d voxel coordinates that will round down to zero\n', length(f))
 end
 

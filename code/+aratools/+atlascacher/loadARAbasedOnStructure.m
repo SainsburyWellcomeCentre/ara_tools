@@ -15,6 +15,6 @@ function DATA = loadARAbasedOnStructure(DATA)
 
 
 
-	pathToARA=fullfile(DATA.pathToFile,DATA.fname);
-	fprintf('Loading %s\n',pathToARA)
-	DATA.atlasVolume = mhd_read( pathToARA);
+    pathToARA=fullfile(DATA.pathToFile,DATA.fname);
+    fprintf('Loading %s\n',pathToARA)
+    DATA.atlasVolume = mhd_read( pathToARA);

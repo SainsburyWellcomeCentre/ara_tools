@@ -30,27 +30,27 @@ function jsonTree=buildTreeFromARALabels(fname,verbose)
 
 
 if ~exist('loadjson','file')
-	fprintf('function loadjson is missing. Download JSONlab from the FileExchange\n');
+    fprintf('function loadjson is missing. Download JSONlab from the FileExchange\n');
 end
 
 if nargin<2
-	verbose=0;
+    verbose=0;
 end
 
 %Load json file is a string was provided. 
 if isstr(fname)
-	if exist(fname,'file')
-		if verbose
-			fprintf('Extracting data from %s\n',fname)
-		end
-		json = loadjson(fname);
-	else
-		fprintf('%s not in path. quitting %s\n', fname, mfilename)
-		jsonTree = [];
-		return
-	end
+    if exist(fname,'file')
+        if verbose
+            fprintf('Extracting data from %s\n',fname)
+        end
+        json = loadjson(fname);
+    else
+        fprintf('%s not in path. quitting %s\n', fname, mfilename)
+        jsonTree = [];
+        return
+    end
 elseif isstruct(fname)
-	json = fname;
+    json = fname;
 end
 
 
@@ -58,7 +58,7 @@ end
 %Loop through the json and pull out the brain area names and labels
 %using a recursive function call
 if verbose
-	fprintf('Flattening\n')
+    fprintf('Flattening\n')
 end
 jsonTree = looper(json.msg{1});
 
@@ -67,23 +67,23 @@ jsonTree = looper(json.msg{1});
 function out = looper(json,out,ind)
 % looper searches recursively through the structure to build the tree
 if nargin<2
-	node.id = json.id;
-	node.acronym = json.acronym;
-	node.name = json.name;
+    node.id = json.id;
+    node.acronym = json.acronym;
+    node.name = json.name;
 
-	out = tree(node);
-	ind=1;
-	looper(json,out,ind);
+    out = tree(node);
+    ind=1;
+    looper(json,out,ind);
 end
 
 for ii=1:length(json.children)
-	c = json.children{ii};
-	node.id = c.id;
-	node.acronym = c.acronym;
-	node.name = c.name;
+    c = json.children{ii};
+    node.id = c.id;
+    node.acronym = c.acronym;
+    node.name = c.name;
 
-	[out,ind] = out.addnode(ind,node);
+    [out,ind] = out.addnode(ind,node);
 
-	out = looper(c,out,ind);
+    out = looper(c,out,ind);
 end
 

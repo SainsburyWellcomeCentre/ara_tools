@@ -12,7 +12,7 @@ function varargout = findBrightPixels(dataDir,pixVals)
 %
 % Inputs
 % dataDir - string defining relative or absolute path to directory containing 
-%  			TIFF images. e.g. 'stitchedImages_100/1'
+%              TIFF images. e.g. 'stitchedImages_100/1'
 % pixVals - scalar or vector defining the pixel threshold value. If a vector
 %           of length n, we save n .mat files each with values thresholded at 
 %           a different pixVal
@@ -36,34 +36,34 @@ S=settings_handler('settingsFiles_ARAtools.yml');
 tiffs = dir(fullfile(dataDir,'*.tif*'));
 
 if isempty(tiffs)
-	fprintf('No tiffs found in %s\n',dataDir);
-	return
+    fprintf('No tiffs found in %s\n',dataDir);
+    return
 end
 
 
 ST = struct('x',[],...
-		'y',[],...
-		'z',[],...
-		'thresh',0);
+        'y',[],...
+        'z',[],...
+        'thresh',0);
 
 
 allSections={};
 
 fprintf('Looping through %d sections to find bright pixels\n',length(tiffs))
 parfor ii=1:length(tiffs)
-	out = repmat(ST,1,length(pixVals));
-	T=openTiff(fullfile(dataDir,tiffs(ii).name));
+    out = repmat(ST,1,length(pixVals));
+    T=openTiff(fullfile(dataDir,tiffs(ii).name));
 
-	for kk=1:length(pixVals)
-		[y,x]=ind2sub(size(T),find(T>pixVals(kk)));
+    for kk=1:length(pixVals)
+        [y,x]=ind2sub(size(T),find(T>pixVals(kk)));
 
-		out(1,kk).x = x;
-		out(1,kk).y = y;
-		out(1,kk).z = ii;
-		out(1,kk).thresh=pixVals(kk);
+        out(1,kk).x = x;
+        out(1,kk).y = y;
+        out(1,kk).z = ii;
+        out(1,kk).thresh=pixVals(kk);
 
-	end
-	allSections{ii}=out;
+    end
+    allSections{ii}=out;
 
 end
 
@@ -73,45 +73,45 @@ end
 fprintf('collating bright pixel data\n')
 sparsedataDir='sparsedata';
 if ~exist(sparsedataDir,'dir')
-	mkdir(sparsedataDir)
+    mkdir(sparsedataDir)
 end
 
 fnames = {};
 parfor p=1:length(pixVals)
 
-	%figure out the size of the final array
-	s=0;
-	for ii=1:length(allSections)
-		s=s+length(allSections{ii}(p).x);
-	end
+    %figure out the size of the final array
+    s=0;
+    for ii=1:length(allSections)
+        s=s+length(allSections{ii}(p).x);
+    end
 
 
-	thresh = allSections{1}(p).thresh;
-	fname = sprintf('pixLocs_%d',thresh);
+    thresh = allSections{1}(p).thresh;
+    fname = sprintf('pixLocs_%d',thresh);
 
-	theseData=ones(s,3,'uint16');
-	n=1; %the starting index
+    theseData=ones(s,3,'uint16');
+    n=1; %the starting index
 
-	for ii=1:length(allSections)
-		tmp = allSections{ii}(p);
-		t=uint16([repmat(tmp.z,length(tmp.x),1),tmp.x,tmp.y]);
-		theseData(n:n+length(tmp.x)-1,:) = t;
-		n=n+length(tmp.x);
-	end
+    for ii=1:length(allSections)
+        tmp = allSections{ii}(p);
+        t=uint16([repmat(tmp.z,length(tmp.x),1),tmp.x,tmp.y]);
+        theseData(n:n+length(tmp.x)-1,:) = t;
+        n=n+length(tmp.x);
+    end
 
-	saver(fname,theseData,sparsedataDir)
-	fnames{p}=fname;
+    saver(fname,theseData,sparsedataDir)
+    fnames{p}=fname;
 
 end
 
 
 if nargout>0
-	varargout{1}=fnames;
+    varargout{1}=fnames;
 end
 
 
 
 function saver(fname,pixelLocations,sparsedataDir)
-	fname=[fname,'.mat'];
-	fprintf('Saving data as %s\n',fname)
-	save(fullfile(sparsedataDir,fname),'pixelLocations')
+    fname=[fname,'.mat'];
+    fprintf('Saving data as %s\n',fname)
+    save(fullfile(sparsedataDir,fname),'pixelLocations')

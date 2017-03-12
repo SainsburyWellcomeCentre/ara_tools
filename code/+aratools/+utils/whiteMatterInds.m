@@ -28,7 +28,7 @@ function [inds,areaNames] = whiteMatterInds
 labels=getAllenStructureList; 
 
 searchTerms = {...
-	'corpus callosum',...
+    'corpus callosum',...
     'fiber',...
     'nerve',...
     'tract',...
@@ -41,9 +41,9 @@ searchTerms = {...
 
 f=[]; %rows that contain one of the above terms get appended to f
 
-for ii=1:length(searchTerms)	
-	C=cellfun(@(x) strfind(lower(x),searchTerms{ii}), labels.name, 'uniformoutput',false); %search for string 
-	f = [f; find(~cellfun(@isempty,C))];
+for ii=1:length(searchTerms)    
+    C=cellfun(@(x) strfind(lower(x),searchTerms{ii}), labels.name, 'uniformoutput',false); %search for string 
+    f = [f; find(~cellfun(@isempty,C))];
 end
 
 f = unique(f); %just in case
@@ -53,7 +53,7 @@ areaNames = labels.name(f); %These are the area names
 
 % Remove nuclie that shouldn't be there
 C=cellfun(@(x) strfind(lower(x),'nucleus of the '), ...
-			areaNames, 'uniformoutput',false);
+            areaNames, 'uniformoutput',false);
 f=find(~cellfun(@isempty,C));
 inds(f) = [];
 areaNames(f) = [];

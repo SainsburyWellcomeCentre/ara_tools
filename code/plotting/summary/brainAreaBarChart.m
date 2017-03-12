@@ -28,7 +28,7 @@ function varargout=brainAreaBarChart(data)
 %unique brain areas across array
 uInd = [];
 for ii=1:length(data)
-	uInd = [uInd; data(ii).ind];
+    uInd = [uInd; data(ii).ind];
 end
 
 uInd = unique(uInd);
@@ -37,28 +37,28 @@ uInd = unique(uInd);
 ns=numSubplots(length(data));
 
 if nargin>0
-	out.y=cell(length(data),1);
+    out.y=cell(length(data),1);
 end
 
 for ii=1:length(data)
-	subplot(ns(1),ns(2),ii)
+    subplot(ns(1),ns(2),ii)
 
-	hits=zeros(size(uInd));
+    hits=zeros(size(uInd));
 
-	for kk=1:length(hits)
-		hits(kk) = length(find(data(ii).ind==uInd(kk)));
-	end
+    for kk=1:length(hits)
+        hits(kk) = length(find(data(ii).ind==uInd(kk)));
+    end
 
-	bar(1:length(hits),hits)
-	drawnow
+    bar(1:length(hits),hits)
+    drawnow
 
-	if nargin>0
-		out.y{ii}=hits;
-	end
+    if nargin>0
+        out.y{ii}=hits;
+    end
 
 end
 
 if nargin>0
-	out.areaInd=uInd;
-	varargout{1}=out;
+    out.areaInd=uInd;
+    varargout{1}=out;
 end

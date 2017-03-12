@@ -43,7 +43,7 @@ function [dirs,details,unprocessed] = returnProcessedExperiments(subdir)
 %    'YH121_150707'
 %    'YH124_150713'
 %    'YH129_150803'
-%	 ...
+%     ...
 %
 % 2. 
 % >> S=settings_handler('settingsFiles_ARAtools.yml');
@@ -57,7 +57,7 @@ function [dirs,details,unprocessed] = returnProcessedExperiments(subdir)
 %    'YH121_150707/downsampled/sample2ARA/overlays'
 %    'YH124_150713/downsampled/sample2ARA/overlays'
 %    'YH129_150803/downsampled/sample2ARA/overlays'
-%	 ...
+%     ...
 %
 % 
 % Also see:
@@ -68,12 +68,12 @@ function [dirs,details,unprocessed] = returnProcessedExperiments(subdir)
 
 
 if nargin<1
-	subdir=[];
+    subdir=[];
 end
 
 fname='./analysis_log.csv'; 
 if ~exist(fname)
-	error('Can not find %s. Are you in the correct directory?',fname)
+    error('Can not find %s. Are you in the correct directory?',fname)
 end
 
 fid = fopen(fname);
@@ -82,7 +82,7 @@ fclose(fid);
 
 animal=csv{1};
 processed=csv{2};
-notes=csv{3};	
+notes=csv{3};    
 
 
 allDirs=dir('./*'); %all files in current directory
@@ -93,43 +93,43 @@ n=1;
 unprocessed = {};
 for ii=1:length(animal)
 
-	dirInd = strmatch(animal{ii},allDirs);
-	if isempty(dirInd)
-		fprintf('Can not find directory for animal %s\n',animal{ii});
-		continue
-	end
-	dirName=allDirs{dirInd};
+    dirInd = strmatch(animal{ii},allDirs);
+    if isempty(dirInd)
+        fprintf('Can not find directory for animal %s\n',animal{ii});
+        continue
+    end
+    dirName=allDirs{dirInd};
 
-	if ~isempty(subdir)
-		thisDirName = fullfile(dirName,subdir) ;
-	else
-		thisDirName = dirName;
-	end
-
-
-	if ~processed(ii)
-		unprocessed{length(unprocessed)+1}=thisDirName;
-		continue %Skip unprocessed directories
-	end
-
-	if ~exist(thisDirName,'dir')
-		fprintf('No directory %s\n',thisDirName)
-		continue
-	end
-
-	%Log the processed data directories
-	dirs{n}=thisDirName;
+    if ~isempty(subdir)
+        thisDirName = fullfile(dirName,subdir) ;
+    else
+        thisDirName = dirName;
+    end
 
 
-	%Log the other parameters stored in the text file
-	details(n).animalID=animal{ii};
+    if ~processed(ii)
+        unprocessed{length(unprocessed)+1}=thisDirName;
+        continue %Skip unprocessed directories
+    end
+
+    if ~exist(thisDirName,'dir')
+        fprintf('No directory %s\n',thisDirName)
+        continue
+    end
+
+    %Log the processed data directories
+    dirs{n}=thisDirName;
+
+
+    %Log the other parameters stored in the text file
+    details(n).animalID=animal{ii};
     details(n).processed=processed(ii);
-	details(n).notes=notes{ii};
+    details(n).notes=notes{ii};
 
-	n=n+1;
+    n=n+1;
 
 end
 
 if isempty(dirs)
-	fprintf('\n\n ***  %s found no data at all! ***\n\n',mfilename)
+    fprintf('\n\n ***  %s found no data at all! ***\n\n',mfilename)
 end

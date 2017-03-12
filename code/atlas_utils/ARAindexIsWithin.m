@@ -48,27 +48,27 @@ function isWithin = ARAindexIsWithin(ind,thisArea,skipChecks,labels)
 
 %Check that thisArea exists
 if nargin<3
-	skipChecks=0;
+    skipChecks=0;
 end
 
 if nargin<4
-	labels = getAllenStructureList;
+    labels = getAllenStructureList;
 end
 
 if ~skipChecks
-	if isnumeric(thisArea)
-		f=find(labels.id==thisArea);
-		if isempty(f)
-			fprintf('Can not find area %s\n',thisArea)
-			return
-		end
-	elseif isstr(thisArea)
-		f = isAreaPresent(labels,thisArea);
-		if isempty(f)
-			fprintf('Can not find area %s\n',thisArea)
-			return
-		end
-	end
+    if isnumeric(thisArea)
+        f=find(labels.id==thisArea);
+        if isempty(f)
+            fprintf('Can not find area %s\n',thisArea)
+            return
+        end
+    elseif isstr(thisArea)
+        f = isAreaPresent(labels,thisArea);
+        if isempty(f)
+            fprintf('Can not find area %s\n',thisArea)
+            return
+        end
+    end
 end
 
 
@@ -76,25 +76,25 @@ isWithin = 0;
 currentID = ind;
 verbose=0;
 while isWithin==0 & currentID~=997 %997 is the root id (for some reason)
-	f=find(labels.id==currentID);
-	if isempty(f)
-		error('Can not find index %d in brainIndex',currentID)
-	end
-	parentID = labels.parent_structure_id(f);
-	parentname = labels.name{find(labels.id==parentID)};
-	if verbose
-		fprintf('%s (%d) is within %s (%d)\n',labels{f,4}{1}, currentID, parentname, parentID) 
-	end
-	if isnumeric(thisArea)
-		if thisArea==currentID
-			isWithin=1;
-		end
-	elseif isstr(thisArea)
-		t = regexpi(parentname,['^',thisArea]); %CAUTION: is this regex is wrong then areas will be erroneously assigned
-		if ~isempty(t)
-			isWithin=1;
-		end
-	end
+    f=find(labels.id==currentID);
+    if isempty(f)
+        error('Can not find index %d in brainIndex',currentID)
+    end
+    parentID = labels.parent_structure_id(f);
+    parentname = labels.name{find(labels.id==parentID)};
+    if verbose
+        fprintf('%s (%d) is within %s (%d)\n',labels{f,4}{1}, currentID, parentname, parentID) 
+    end
+    if isnumeric(thisArea)
+        if thisArea==currentID
+            isWithin=1;
+        end
+    elseif isstr(thisArea)
+        t = regexpi(parentname,['^',thisArea]); %CAUTION: is this regex is wrong then areas will be erroneously assigned
+        if ~isempty(t)
+            isWithin=1;
+        end
+    end
 
-	currentID = parentID;
+    currentID = parentID;
 end

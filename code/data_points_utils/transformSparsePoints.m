@@ -27,17 +27,17 @@ function transformSparsePoints(csvName,params,fname)
 
 
 if isstr(csvName) & exist(csvName)
-	data = csvread(csvName);
+    data = csvread(csvName);
 else
-	fprintf('csvName should be a valid path to a csv file')
+    fprintf('csvName should be a valid path to a csv file')
 end
 
 if size(data,2)==5
-	indexOffset=2;
+    indexOffset=2;
 elseif size(data,2)==3
-	indexOffset=0;
+    indexOffset=0;
 else
-	fprintf('Number of columns is %d. Expected 5 or 3 columns. Aborting\n',size(data,2))
+    fprintf('Number of columns is %d. Expected 5 or 3 columns. Aborting\n',size(data,2))
 end
 
 tmpData = data(:,[2,3,1]+indexOffset);
