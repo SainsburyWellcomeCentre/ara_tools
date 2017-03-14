@@ -141,9 +141,8 @@ end
 f=find(any(sparsePointMatrix==0,2));
 if ~isempty(f)
     fprintf('\n\n *** Removing %d points which have index values of zero. Removing them. *** \n\n',length(f))
-    atlasVolume(f,:)=[];
+    sparsePointMatrix(f,:)=[];
 end
-
 
 
 % Check if we will run into indexing errors and correct.
