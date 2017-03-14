@@ -150,7 +150,7 @@ if isstr(groupingRule)
             end
 
 
-            % 
+
             %depth 8 contains the cortical layers for the visual areas, and most somatosensory are in 9
             f=find(subset.depth==9 | subset.depth==8 | subset.depth==7);
 
@@ -182,6 +182,12 @@ if isstr(groupingRule)
                     origNamesL(f)=[];
                     newNamesL(f)=[];
                 end
+            else
+                fprintf('Found no points in any cortical layers.\n')
+                origIDsL=[];
+                newIDsL=[];
+                origNamesL=[];
+                newNamesL=[];
             end
 
             origIDs = [origIDsL;origIDsR];
