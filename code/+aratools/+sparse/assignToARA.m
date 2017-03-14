@@ -140,7 +140,7 @@ end
 % Remove rows with an matrix indexing value of zero.
 f=find(any(sparsePointMatrix==0,2));
 if ~isempty(f)
-    fprintf('\n\n *** Removing %d points which have index values of zero. Removing them. *** \n\n',length(f))
+    fprintf('\n\n *** Removing %d points which have index values of zero (i.e. it was assigned out of the atlas). Removing them. *** \n\n',length(f))
     sparsePointMatrix(f,:)=[];
 end
 
