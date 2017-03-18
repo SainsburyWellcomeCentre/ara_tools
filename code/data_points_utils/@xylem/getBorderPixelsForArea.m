@@ -21,6 +21,7 @@ function varargout=getBorderPixelsForArea(obj,areaIndex,displayBorderAreaNames)
     %
     % Outputs (optional)
     % borderIndexes = index values corresponding to the edges in the atlas volume.
+    % borderingStructureIDs = the structure IDs of the areas bordering "areaIndex"
     %
     % 
     % Also see:
@@ -72,24 +73,28 @@ function varargout=getBorderPixelsForArea(obj,areaIndex,displayBorderAreaNames)
     borderIndexes = borderIndexes(f);
 
     if displayBorderAreaNames
-
+        ARA=getAllenStructureList;
         u=unique(obj.atlas.atlasVolume(borderIndexes));
         if isempty(u)
             fprintf('Nothing found\n')
         end
 
-        fprintf('Selected area "%s" (%d) is bordered by:\n',...
-            structureID2name(areaIndex),areaIndex)
-        S=structureID2name(u);
-        if iscell(S)
-            disp(S')
-        else
-            disp(S)
+        fprintf('\nSelected area "%s" (%d) is bordered by:\n',...
+            structureID2name(areaIndex,ARA),areaIndex)
+        S=structureID2name(u,ARA);
+        if ~iscell(S)
+            S={S};
         end
+        for thisArea = 1:length(S)
+            fprintf('  %s (%d)\n',S{thisArea}, u(thisArea))
+        end
+        fprintf('\n')
     end
 
     if nargout>0
         varargout{1} = borderIndexes;
     end
-
+    if nargin>1
+        varargout{2} = u;
+    end
 end %getBorderPixelsForArea
