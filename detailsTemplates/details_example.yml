@@ -43,7 +43,7 @@ cell 01:
 
 # - - - - - - - - - - - - - - - - -
 cell 02:
-#If there is nothing here we assume that cell 2 is present and that it it should be included in the analysis an that it's completely traced locally
+#If there is nothing here we assume that cell 2 is present and that it should be included in the analysis and that it's completely traced locally
 
 
 

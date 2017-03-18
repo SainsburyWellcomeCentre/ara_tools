@@ -14,7 +14,7 @@ function varargout=getBorderPixelsForArea(obj,areaIndex,displayBorderAreaNames)
     %
     %
     % Inputs
-    % areaIndex - the index of the area for which we will find borers
+    % areaIndex - the index of the area for which we will find borders
     % displayBorderAreaNames - optional bool. false by default. if true, print 
     %                          to screen the names of the border areas
     %
@@ -59,7 +59,7 @@ function varargout=getBorderPixelsForArea(obj,areaIndex,displayBorderAreaNames)
     borderIndexes=find(TMP==1);
 
     if length(borderIndexes)==0
-        fprintf('Found no border for area %d. ODD.\n',areaIndex)
+        fprintf('Found no border for area %d. This is odd.\n',areaIndex)
     end
 
     if verbose
