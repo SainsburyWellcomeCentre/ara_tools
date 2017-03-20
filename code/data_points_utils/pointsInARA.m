@@ -1,4 +1,4 @@
- function varargout=pointsInARA(pointsData,upsampledTree)
+ function varargout=pointsInARA(pointsData)
 % generate a structure listing the brain area associated with each sparse data point
 %
 %
@@ -149,10 +149,10 @@ out.pointsFname=pointsFname;  %File name of the downsampled (and likely transfor
 out.pointsDataArg=[];  %This is the argument with which we we called pointsInARA. If we did batchmode, we'll know what was done with this arg
 out.voxelSize=getSampleVoxelSize(strtok(pointsFname,filesep));
 out.atlas=CACHED_ATLAS; %The atlas data minus the actual atlas volume
-out.rawSparseData=pointsData; %The original points file
+out.rawSparseData=pointsData; %The raw points data from the original points file
 
 
-%The order of the columns used to determine the brain arear location. Must be ordered in the dims of the MHD
+%The order of the columns used to determine the brain area location. Must be ordered in the dims of the MHD
 %The last three columns should be the point location data. 
 %With a tree file, there will be 5 columns as the first two are the node ID and parent node ID. 
 %With a MaSIV points file, the first column will be the cell series ID
@@ -162,6 +162,29 @@ out.notes='';
 
 %This is a map that contains the different data formats
 out.pointsInARA.rawSparseData = aratools.sparse.assignToARA(out,pointsData);
+
+
+
+%Now we save a copy of the original traces from the neurite tracer
+
+%Step 1: find the orginal sparse data file
+tok=regexp(pointsFname,['(.*?',filesep,')'],'tokens');
+pathToSparseData = fullfile(tok{1}{1},'sparsedata');
+
+[~,tracedCSVfName] = fileparts(pointsFname);
+originalSparseDataFile = fullfile(pathToSparseData, regexprep(tracedCSVfName,'_tree.*','.mat'));
+
+
+%Step 2: if it's available, we load it, find the correctr trace and store this in the output structure
+if exist(originalSparseDataFile,'file')
+    tok=regexp(pointsFname,'_tree_(\d+)','tokens'); %Get the trace number
+    traceNumber = str2num(tok{1}{1});
+    fprintf('Incorporating original trace data from trace %d of this sample\n',traceNumber)
+    load(originalSparseDataFile)
+    out.origTrace=neurite_markers{traceNumber};
+else
+    fprintf('Can not find original sparse data file at %s\n')
+end
 
 
 if nargout>0

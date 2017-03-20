@@ -1,7 +1,7 @@
 function [summary,byAnimal,byCell,unprocessed] = returnSparseDataSummary
-% Call from root dir of an anatomy experiment project. Returns structure containing traced cell details
+% Call from root dir of an anatomy experiment project. Returns structure containing details of the experiments therein.
 %
-% function [summary,byAnimal,byCell,unprocessed] = returnSparseDataSummary
+% function [summary,byAnimal,byCell,unprocessed] = aratools.utils.returnSparseDataSummary
 %
 %
 % Purpose
@@ -73,7 +73,11 @@ for ii=1:length(dirs)
     end
 
     %load the YML
-    Y=yaml.ReadYaml(detailsPath);
+    try
+        Y=yaml.ReadYaml(detailsPath);
+    catch ME
+        disp(ME)
+    end
 
     Y = validateData(Y,details(ii),detailsPath); %Add missing fields and process the structure into a standard form
     Y.dataDir = dirs{ii};
