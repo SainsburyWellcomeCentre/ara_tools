@@ -81,7 +81,7 @@ end
 
 
 if nargin<1
-    fprintf('Function requires two input argumements. see help %s\n',mfilename)
+    fprintf('Function requires one input argumement. see help %s\n',mfilename)
     return
 end
 

@@ -83,7 +83,7 @@ params.CaseSensitive=false;
 params.addParameter('verbose',false, @(x) islogical(x) || x==1 || x==0)
 params.addParameter('groupLayers',true, @(x) islogical(x) || x==1 || x==0)
 params.addParameter('surfaceDepth',3,@(x) isnumeric(x) && isscalar(x))
-params.addParameter('dilateSize',[],@(x) isnumeric(x) && isscalar(x))
+params.addParameter('dilateSize',4,@(x) isnumeric(x) && isscalar(x))
 params.addParameter('groupChildren',{},@(x) ischar(x) || isnumeric(x) || iscell(x))
 params.addParameter('removeAreaWithChildren',{},@(x) ischar(x) || isnumeric(x) || iscell(x))
 params.addParameter('groupIndsInProjection',{},@(x) iscell(x))
