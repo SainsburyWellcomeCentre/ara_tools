@@ -22,9 +22,10 @@ function [out,atlas] = generate(atlas, dim, varargin)
 % 'removeAreaWithChildren' - A cell array (or a single string) of area names 
 %                   to remove. e.g. "cerebellum" will remove the cerebellum and all
 %                   child areas. NOTE: this may clash with groupChildren.
-% 'groupLayers' - [true] if false we don't group cortical layers. 
+% 'groupLayers' - [true] if false we don't group cortical layers.
 % 'groupIndsInProjection' - a cell array of numeric vectors. In each vector, all values 
 %                           set to be equal to the target value in the projected image.
+% 'medFiltSize' - default 1 (no filtering) if >1 we median filter before the dilate/erode
 % 'dilateSize' - default 4. the degree of smoothing in generating the boundaries. 
 %
 % Outputs
@@ -83,6 +84,7 @@ params.CaseSensitive=false;
 params.addParameter('verbose',false, @(x) islogical(x) || x==1 || x==0)
 params.addParameter('groupLayers',true, @(x) islogical(x) || x==1 || x==0)
 params.addParameter('surfaceDepth',3,@(x) isnumeric(x) && isscalar(x))
+params.addParameter('medFiltSize',1,@(x) isnumeric(x) && isscalar(x))
 params.addParameter('dilateSize',4,@(x) isnumeric(x) && isscalar(x))
 params.addParameter('groupChildren',{},@(x) ischar(x) || isnumeric(x) || iscell(x))
 params.addParameter('removeAreaWithChildren',{},@(x) ischar(x) || isnumeric(x) || iscell(x))
@@ -95,6 +97,7 @@ groupChildren = params.Results.groupChildren;
 removeAreaWithChildren = params.Results.removeAreaWithChildren;
 groupLayers = params.Results.groupLayers;
 groupIndsInProjection = params.Results.groupIndsInProjection;
+medFiltSize = params.Results.medFiltSize;
 dilateSize = params.Results.dilateSize;
 
 if ischar(groupChildren)
@@ -210,7 +213,7 @@ for ii=1:length(N)
             %Is probably just caused by grouped areas
             fprintf('No index value %d found in index structure. Skipping\n',N(ii));
         end
-        continue        
+        continue
     end
 
     % Do not re-assign if the depth in the ARA label tree is shallower than 7, since it's then not a layer.
@@ -257,5 +260,6 @@ out.structureList = SL(allInds,:);
 
 
 %Calculate the smoothed boundaries
+out.projectedAtlas = medfilt2(out.projectedAtlas,[medFiltSize,medFiltSize]);
 out=aratools.projectAtlas.createBoundaries(out,dilateSize);
 
