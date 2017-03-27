@@ -18,9 +18,10 @@ function varargout=simplePlotter(projectionStructure,colorAreas,subCorticalInd)
     %                If false, the areas are plotted as near-white lines on a gray background. 
     %                If true, each area outline is drawn in a different color.
     %   subCorticalInd - [empty by default]
-    %                    Otherwise a scalar or vector of area index values. These are read
+    %                    Otherwise a scalar or cell array of area index values. These are read
     %                    off from the LOAD_ARA in the base work space (see aratools.cacheAtlasToBaseWorkSpace)
     %                    and are rendered as a max intensity area underneath the existing area outlines. 
+    %                    If a cell array, all items in the same cell are grouped.
     %
     %
     % Outputs
@@ -38,7 +39,9 @@ function varargout=simplePlotter(projectionStructure,colorAreas,subCorticalInd)
     % clf
     % aratools.projectAtlas.simplePlotter(projections(1),[],[672,131])
     %
-    %
+    % 3) Overlay caudoputamen, lateral amygdalar nucleus, and ACC onto plot
+    % clf
+    % aratools.projectAtlas.simplePlotter(projections(1),[],{672,131,[211,935]})
     %
     % Rob Campbell - 2017
     %
@@ -60,6 +63,9 @@ function varargout=simplePlotter(projectionStructure,colorAreas,subCorticalInd)
         subCorticalInd=[];
     end
 
+    if ~iscell(subCorticalInd)
+        subCorticalInd={subCorticalInd};
+    end
 
     %Set up the optional color-coding
     n=height(projectionStructure.structureList);
@@ -91,10 +97,19 @@ function varargout=simplePlotter(projectionStructure,colorAreas,subCorticalInd)
 
         %loop through the sub-cortical area index values and overlay them on the plot
         for ii=1:length(subCorticalInd)
-            areaMask = any(vol==subCorticalInd(ii),3);
+            these_areas = subCorticalInd{ii};
+            areaMask = any(vol==these_areas(1),3);
+
+            if length(these_areas)>1
+                for kk=2:length(these_areas)
+                    areaMask = areaMask+any(vol==these_areas(kk),3);
+                end
+            end
+            areaMask = any(areaMask,3);
+
             B=bwboundaries(areaMask);
             for kk=1:length(B)
-                H.subCort(end+1)=plot(B{kk}(:,2),B{kk}(:,1),'r--')
+                H.subCort(end+1)=plot(B{kk}(:,2),B{kk}(:,1),'r--');
             end
         end
 
