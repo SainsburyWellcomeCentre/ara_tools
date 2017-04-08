@@ -68,7 +68,6 @@ function varargout=simplePlotter(projectionStructure,subCorticalInd)
 
     %Handle non-surface areas first
     if ~isempty(subCorticalInd)
-        tic
          A=aratools.atlascacher.getCachedAtlas;
          vol = A.atlasVolume;
 
@@ -99,7 +98,6 @@ function varargout=simplePlotter(projectionStructure,subCorticalInd)
                 H.subCort(end+1)=plot(B{kk}(:,2),B{kk}(:,1),'r--');
             end
         end
-        toc
     end
 
     n=height(projectionStructure.structureList);
