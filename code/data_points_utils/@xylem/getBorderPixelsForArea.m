@@ -72,13 +72,15 @@ function varargout=getBorderPixelsForArea(obj,areaIndex,displayBorderAreaNames)
     f = ~ismember(obj.atlas.atlasVolume(borderIndexes), [0;obj.whiteMatterInds]); %f is non-white matter
     borderIndexes = borderIndexes(f);
 
+
+
+    u=unique(obj.atlas.atlasVolume(borderIndexes));
+    if isempty(u)
+        fprintf('No border indexes found in xylem.refreshStoredAreaBorders\n')
+    end
+
     if displayBorderAreaNames
         ARA=getAllenStructureList;
-        u=unique(obj.atlas.atlasVolume(borderIndexes));
-        if isempty(u)
-            fprintf('Nothing found\n')
-        end
-
         fprintf('\nSelected area "%s" (%d) is bordered by:\n',...
             structureID2name(areaIndex,ARA),areaIndex)
         S=structureID2name(u,ARA);

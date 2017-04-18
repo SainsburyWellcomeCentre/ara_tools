@@ -75,7 +75,7 @@
 CACHED_ATLAS = aratools.atlascacher.getCachedAtlas;
 
 if isempty(CACHED_ATLAS)
-    fprintf('Please cache an atlas using aratools.cachceAtlasToWorkSpace\n')
+    fprintf('Please cache an atlas using aratools.cacheAtlasToWorkSpace\n')
     return
 end
 
