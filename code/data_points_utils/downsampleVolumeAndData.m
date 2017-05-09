@@ -49,7 +49,7 @@ if nargin<3
   dataFilename=[];
 end
 
-if ~isempty(dataFilename) & ~exist(dataFilename,'file')
+if ~isempty(dataFilename) && ~exist(dataFilename,'file')
   fprintf('Could not find %s. Not down sampling data file\n',dataFilename)
   dataFilename=[];
 end
@@ -108,9 +108,8 @@ fprintf(fid,'volFname: %s\n',volFname);
 %Move the resampled volume to the settings directory
 if doResampleVolume==1
   if ~movefile([volFname,'.*'],S.downSampledDir)
-    msg = sprintf('failed to move %s.* to directory %s',volFname,S.downSampledDir);
     fclose(fid);
-    error(msg)
+    error('failed to move %s.* to directory %s',volFname,S.downSampledDir)
   end
 end
 fclose(fid);
@@ -131,7 +130,7 @@ fid=fopen(fullfile(S.downSampledDir,logFileName),'w');
 %XY102_25_25_01.mhd then the downsampled log file will be called XY102_25_25_01.txt
 logging = exportSparseMaSIVData(dataFilename, fullfile(S.downSampledDir,[volFname,'.txt']));
 
-if ~isstruct(logging) & logging<0
+if ~isstruct(logging) && logging<0
   return
 end
 
