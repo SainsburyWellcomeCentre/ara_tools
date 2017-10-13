@@ -1,7 +1,7 @@
-function varargout=getBorderPixelsForArea(obj,areaIndex,displayBorderAreaNames)
+function varargout=getBorderPixelsForArea(obj,areaIndex,displayBorderAreaNames,verbose)
     % getBorderPixelsForArea
     %
-    % function varargout=getBorderPixelsForArea(obj,areaIndex,displayBorderAreaNames)
+    % function varargout=getBorderPixelsForArea(obj,areaIndex,displayBorderAreaNames,verbose)
     %
     %
     % Purpose
@@ -14,14 +14,15 @@ function varargout=getBorderPixelsForArea(obj,areaIndex,displayBorderAreaNames)
     %
     %
     % Inputs
-    % areaIndex - the index of the area for which we will find borders
-    % displayBorderAreaNames - optional bool. false by default. if true, print 
+    % areaIndex - The index of the area for which we will find borders
+    % displayBorderAreaNames - optional bool. false by default. If true, print 
     %                          to screen the names of the border areas
+    % verbose - false by default
     %
     %
     % Outputs (optional)
-    % borderIndexes = index values corresponding to the edges in the atlas volume.
-    % borderingStructureIDs = the structure IDs of the areas bordering "areaIndex"
+    % borderIndexes - index values corresponding to the edges in the atlas volume.
+    % borderingStructureIDs - the structure IDs of the areas bordering "areaIndex"
     %
     % 
     % Also see:
@@ -29,11 +30,15 @@ function varargout=getBorderPixelsForArea(obj,areaIndex,displayBorderAreaNames)
     % xylem.addBorderInfoToFilteredData
     % xylem.removePointsNearBorders
 
-    verbose=false;
 
-    if nargin<3
+    if nargin<3 || isempty(displayBorderAreaNames)
         displayBorderAreaNames=false;
     end
+
+    if nargin<4
+        verbose=false;
+    end
+
 
     %Create a new volume with only this area
     BW=zeros(size(obj.atlas.atlasVolume),'int8');
@@ -71,7 +76,6 @@ function varargout=getBorderPixelsForArea(obj,areaIndex,displayBorderAreaNames)
     % Strip out the index values that are white matter and out of the brain
     f = ~ismember(obj.atlas.atlasVolume(borderIndexes), [0;obj.whiteMatterInds]); %f is non-white matter
     borderIndexes = borderIndexes(f);
-
 
 
     u=unique(obj.atlas.atlasVolume(borderIndexes));

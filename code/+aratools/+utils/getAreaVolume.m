@@ -41,7 +41,6 @@ end
 % The child areas as a table (returns named area if there are no children)
 childTable = getAllenStructureList('childrenOf',areaID);
 
-
 ARA = aratools.atlascacher.getCachedAtlas;
 
 verbose=0;
@@ -50,7 +49,7 @@ verbose=0;
 numVoxels=0;
 for ii=1:length(childTable.id)
     thisID = childTable.id(ii);
-    if thisID == areaID
+    if size(childTable,1)>1 && thisID == areaID
         continue
     end
     if verbose
