@@ -1,4 +1,4 @@
-function vol = getAreaVolume(areaName)
+function vol = getAreaVolume(areaName,verbose)
 %% Get the volume of an area from the ARA in mm^3
 %
 % function vol = getAreaVolume(areaName)
@@ -8,7 +8,7 @@ function vol = getAreaVolume(areaName)
 % 
 % Inputs
 %   areaName   - String or area ID from ARA 3D matrix of area labels
-%
+%   verbose - true by default
 %
 % Outputs
 % vol - area volume in sq mm
@@ -26,6 +26,9 @@ function vol = getAreaVolume(areaName)
 % Rob Campbell 
 
 
+if nargin<2
+    verbose=false;
+end
 
 vol=[]; % so if there is an error we just return empty
 if ischar(areaName)
@@ -43,21 +46,37 @@ end
 % The child areas as a table (returns named area if there are no children)
 childTable = getAllenStructureList('childrenOf',areaID);
 
+if verbose
+    disp(childTable)
+end
+
 ARA = aratools.atlascacher.getCachedAtlas;
 
-verbose=0;
-
 % Find the number of voxels associated with each ID and multiply by voxel size
-numVoxels=0;
+numVoxelsChildren=0;
+numVoxelsParent=0;
 for ii=1:length(childTable.id)
     thisID = childTable.id(ii);
+
+    n = length(find(ARA.atlasVolume==thisID));
+
     if size(childTable,1)>1 && thisID == areaID
+        fprintf('Parent area %s (ID=%d) volume: %d voxels\n', childTable.name{ii}, thisID, n)
+        numVoxelsParent=n;
         continue
     end
+
+
     if verbose
-        fprintf('Area %s as %d voxels\n', childTable.name{ii}, length(find(ARA.atlasVolume==thisID)))
+        fprintf('Area %s (ID=%d) as %d voxels\n', childTable.name{ii}, thisID, n)
     end
-    numVoxels = numVoxels + length(find(ARA.atlasVolume==thisID));
+    numVoxelsChildren = numVoxelsChildren + n;
+end
+
+if numVoxelsChildren==0 && numVoxelsParent>0
+    numVoxels=numVoxelsParent;
+elseif numVoxelsChildren>0
+    numVoxels=numVoxelsChildren;
 end
 
 
