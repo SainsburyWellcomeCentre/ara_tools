@@ -1,8 +1,10 @@
 function vol = getAreaVolume(areaName)
-%% Get the volume of an area from the ARA in mm^2
+%% Get the volume of an area from the ARA in mm^3
 %
 % function vol = getAreaVolume(areaName)
 %
+% Purpose
+% Return volume of an area in mm^3
 % 
 % Inputs
 %   areaName   - String or area ID from ARA 3D matrix of area labels
