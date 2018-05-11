@@ -26,7 +26,7 @@ e.g. you won't need the registration stuff to plot cells.
 5. Add the contents of the `code` directory to your MATLAB path. 
 
 ### Dependencies
-ARA tools depends on the following MATLAB packages. 
+ARA tools depends on the following MATLAB packages and requires at least R2016b. 
 Clone them and add to your path.
 
 - [Allen API](https://github.com/BaselLaserMouse/AllenBrainAPI)

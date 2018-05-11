@@ -111,6 +111,7 @@ if ~exist(pathToMAT,'file')
 end
 
 treeData=exportedCSV2tree(points);
+
 load(pathToMAT) %Loads ARApoints
 
 if length(treeData.Node) ~= length(ARApoints.ind)

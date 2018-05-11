@@ -147,6 +147,11 @@ CACHED_ATLAS.atlasVolume=[];
 %Start building the output structure
 out.pointsFname=pointsFname;  %File name of the downsampled (and likely transformed) sparse points file
 out.pointsDataArg=[];  %This is the argument with which we we called pointsInARA. If we did batchmode, we'll know what was done with this arg
+
+if isempty(pointsFname)
+    fprintf('WARNING: something is wrong in pointsInARA, the variable "pointsFname" is empty\n')
+end
+
 out.voxelSize=getSampleVoxelSize(strtok(pointsFname,filesep));
 out.atlas=CACHED_ATLAS; %The atlas data minus the actual atlas volume
 out.rawSparseData=pointsData; %The raw points data from the original points file

@@ -35,6 +35,11 @@ function varargout = exportMaSIVNeuriteTree2SWC(neuriteTree,fname)
 % logging - [optional] contains the names of the files that were created 
 %
 %
+% Examples
+% mySWC=aratools.utils.exportMaSIVNeuriteTree2SWC(xylemObject.data(1).neuriteTree);
+%
+%
+%
 % Rob Campbell - Basel 2017
 %
 % See also: convertMarkerStructToTable, readSimpleYAML, exportMaSIVPoints2Lasagna
