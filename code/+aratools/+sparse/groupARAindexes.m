@@ -111,7 +111,6 @@ subset = structures(ismember(structures.id, data.pointsInARA.(dataSetType{indToC
 % -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  
 % We now figure out which index values need to be replaced with which other index values
 if isstr(groupingRule)
-
     switch lower(groupingRule)
         case 'layers' %Group layers by name
 
@@ -250,7 +249,7 @@ elseif iscell(groupingRule)
     end
 
     %Keep only those IDs that we have in our data
-    keep = ismember(oldID,data.ind);
+    keep = ismember(oldID,data.pointsInARA.(dataSetType{indToChoose}).ARAindex);
     oldInd = oldInd(find(keep)); %The index in the array
     oldID = oldID(find(keep));   %The area ID in the atlas
 

@@ -27,7 +27,7 @@ function varargout=simplePlotter(projectionStructure,subCorticalInd)
     %
     % Examples
     % 1) Generate projections and plot
-    % ATLAS=mhd_read('~/tvtoucan/Mrsic-Flogel/ReferenceAtlas/ARA_CCFv3/ARA_25_micron_mhd/atlas_smooth1_corrected.mhd');
+    % ATLAS=mhd_read('/mnt/microscopy/shared/resources/Allen_Reference_Atlas/ARA_CCFv3/ARA_25_micron_mhd/atlas_smooth1_corrected.mhd');
     % out = aratools.projectAtlas.generate(ATLAS);
     % aratools.projectAtlas.simplePlotter(out)
     %
