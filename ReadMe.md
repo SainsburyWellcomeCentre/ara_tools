@@ -49,5 +49,5 @@ See the [Wiki](https://github.com/BaselLaserMouse/ara_tools/wiki) for documentat
 
 
 ### Further info
-[ARA white paper from the Allen Institute](http://help.brain-map.org/download/attachments/2818171/MouseCCF.pdf)
-[The latest CCF](http://download.alleninstitute.org/informatics-archive/current-release/)
+* [ARA white paper from the Allen Institute](http://help.brain-map.org/download/attachments/2818171/MouseCCF.pdf)
+* [The latest CCF](http://download.alleninstitute.org/informatics-archive/current-release/)
