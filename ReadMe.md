@@ -29,6 +29,7 @@ e.g. you won't need the registration stuff to plot cells.
 ARA tools depends on the following MATLAB packages and requires at least R2016b. 
 Clone them and add to your path.
 
+- [Han 2018 MATLAB cell tracing code](https://github.com/BaselLaserMouse/HanSingleCell)
 - [Allen API](https://github.com/BaselLaserMouse/AllenBrainAPI)
 - [JSONlab](http://www.mathworks.com/matlabcentral/fileexchange/33381-jsonlab--a-toolbox-to-encode-decode-json-files-in-matlab-octave)
 - [settings handler](https://github.com/raacampbell/settings_handler)
