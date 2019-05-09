@@ -24,6 +24,7 @@ In places it might expect the raw data were stitched using [StitchIt](https://gi
 e.g. you won't need the registration stuff to plot cells. 
 3. You will need a copy of the Allen Atlas and the template brain in MHD format. One is included on [this page](http://mouse.vision/han2017). 
 5. Add the contents of the `code` directory to your MATLAB path. 
+6. Setup ara_tools properly (see [wiki](https://github.com/SainsburyWellcomeCentre/ara_tools/wiki/Setup))
 
 ### Dependencies
 ARA tools depends on the following MATLAB packages and requires at least R2016b. 

@@ -179,7 +179,8 @@ out.atlas=CACHED_ATLAS; %The atlas data minus the actual atlas volume
 out.rawSparseData=pointsData; %The raw points data from the original points file
 
 
-%The order of the columns used to determine the brain area location. Must be ordered in the dims of the MHD
+%The order of the columns used to determine the brain area location. 
+%Must be ordered in the dims of the MHD
 %The last three columns should be the point location data. 
 %With a tree file, there will be 5 columns as the first two are the node ID and parent node ID. 
 %With a MaSIV points file, the first column will be the cell series ID
