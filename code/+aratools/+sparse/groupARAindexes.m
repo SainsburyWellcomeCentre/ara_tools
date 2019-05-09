@@ -150,8 +150,8 @@ if isstr(groupingRule)
 
 
 
-            %depth 8 contains the cortical layers for the visual areas, and most somatosensory are in 9
-            f=find(subset.depth==9 | subset.depth==8 | subset.depth==7);
+            % find all the areas with ", layer"
+            f=contains(subset.name, ', layer');
 
             if ~isempty(f)
                 origIDsL = subset.id(f); %These are the IDs that we want to change
@@ -160,7 +160,7 @@ if isstr(groupingRule)
                 %loop through those and find their parents
                 newIDsL=zeros(size(origNamesL));
                 newNamesL=cell(size(origNamesL));
-                for ii=1:length(origIDsL);
+                for ii=1:length(origIDsL)
                     %If this ID is a retrosplenial area, we skip it
                     if strfind(origNamesL{ii},'Retrosplenial')
                        origIDsL(ii)=-1;
