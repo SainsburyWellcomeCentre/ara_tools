@@ -29,6 +29,7 @@
 
 (WriteTransformParametersEachIteration "false")
 (WriteResultImage "false")
+(ResultImageFormat "tiff")
 (CompressResultImage "false")
 (WriteResultImageAfterEachResolution "false") 
 (ShowExactMetricValue "false")
