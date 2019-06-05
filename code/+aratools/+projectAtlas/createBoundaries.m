@@ -28,11 +28,10 @@ end
 
 warning('off','MATLAB:table:RowsAddedNewVars')
 out.structureList.areaBoundaries(:)={};
-
+out.structureList.areaHemisphere(:)={};
 for ind = 1:height(projectedAtlasStuct.structureList)
     R = projectedAtlasStuct.projectedAtlas==projectedAtlasStuct.structureList.id(ind);
-
-    R = imerode(imdilate(R,strel('disk',dilateSize)),strel('disk',dilateSize));
+    R = imerode(imdilate(R,strel('disk',dilateSize)),strel('disk',dilateSize-1));
     [B,L] = bwboundaries(R);
 
     if isempty(B)
@@ -44,6 +43,33 @@ for ind = 1:height(projectedAtlasStuct.structureList)
 
     %Store the boundaries in the table
     projectedAtlasStuct.structureList.areaBoundaries{ind}=B;
+    
+    % Find on which hemisphere each of the boundary is
+    if projectedAtlasStuct.dim == 2
+        % it is a sagital view. Hemisphere doesn't make sense
+        whichHem = nan(size(B));
+    elseif projectedAtlasStuct.dim == 1
+        % it is a dorsal view. 
+        whichHem = zeros(size(B));
+        midLine = size(projectedAtlasStuct.projectedAtlas,2)/2;
+        for iB =1:numel(B)
+            b = B{iB};
+            inLeftHem = double(any(b(:,2)<=midLine));
+            inRightHem = double(any(b(:,2)>=midLine));
+            whichHem(iB) = inLeftHem + 2 * inRightHem;
+        end
+    elseif  projectedAtlasStuct.dim == 3
+        %if is a coronal view
+        whichHem = zeros(size(B));
+        midLine = size(projectedAtlasStuct.projectedAtlas,2)/2;
+        for iB =1:numel(B)
+            b = B{iB};
+            inLeftHem = double(any(b(:,2)<=midLine));
+            inRightHem = double(any(b(:,2)>=midLine));
+            whichHem(iB) = inLeftHem + 2 * inRightHem;
+        end
+    end
+    projectedAtlasStuct.structureList.areaHemisphere{ind} = whichHem;
 end
 
 warning('on','MATLAB:table:RowsAddedNewVars')

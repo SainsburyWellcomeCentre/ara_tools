@@ -1,4 +1,4 @@
- function varargout=pointsInARA(pointsData)
+ function varargout=pointsInARA(pointsData, varargin)
 % generate a structure listing the brain area associated with each sparse data point
 %
 %
@@ -15,7 +15,7 @@
 % pointsData - one of: 
 %          a) the relative or absolute path to a csv file containing data exported 
 %          from a tree .mat file or a MaSIV points .yml file. The only constraint 
-%          is that the last three columns of this file should be the z, x, and y
+%          is that the last three columns of this file should be the x, y, and z
 %          locations of the data point. 
 %          ** If it was a tree AND we run in batch mode then we also resample the tree to **
 %          ** a resolution of 5 microns and get the area associated with each point.      **
@@ -25,6 +25,13 @@
 %             and iterates through all experiments, processing each in turn. See example 2, 
 %             below. When called this way, results are saved as mat files in each directory.
 %
+% Inputs (optional - param/value pairs)
+% 'voxelSize' - The size of the voxel of the ara used. If not provided will
+%               guess from the local file names
+% 'diagnosticPlot' - false by default. If true, we show the location of the points in the brain.
+%                    This is useful your're worried about dataColumns being specified incorrectly,
+%                    or if there are concerns about gross misalignment between the atlas and the 
+%                    sparse data points. 
 %
 % Outputs
 % out - a structure with the following fields
@@ -85,14 +92,25 @@ if nargin<1
     return
 end
 
+ % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+%Parse optional arguments
+params = inputParser;
 
+params.CaseSensitive=false;
+params.addParamValue('voxelSize', [], @(x) isnumeric(x));
+params.addParamValue('diagnosticPlot', false, @(x) islogical(x) | x==1 | x==0);
+params.parse(varargin{:});
+
+voxelSize = params.Results.voxelSize;
+diagnosticPlot = params.Results.diagnosticPlot;
+% - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 
 %------------------------------------------------------------------------------------------------------------
 % 
 % read data if the user has supplied a path to a points file
-if isstr(pointsData) %enter recursive function call
-    if isempty(strfind(pointsData,'.csv'))
+if ischar(pointsData) %enter recursive function call
+    if ~contains(pointsData,'.csv')
         fprintf('ENTERING BATCH MODE\n\n')
 
         [dirs,details] = aratools.utils.returnProcessedExperiments(pointsData); %Read csv file "analysis_log.csv" and process all cells listed within it
@@ -149,15 +167,20 @@ out.pointsFname=pointsFname;  %File name of the downsampled (and likely transfor
 out.pointsDataArg=[];  %This is the argument with which we we called pointsInARA. If we did batchmode, we'll know what was done with this arg
 
 if isempty(pointsFname)
+    % TODO should we remove that warning?
     fprintf('WARNING: something is wrong in pointsInARA, the variable "pointsFname" is empty\n')
 end
 
-out.voxelSize=getSampleVoxelSize(strtok(pointsFname,filesep));
+if isempty(voxelSize)
+    voxelSize=getSampleVoxelSize(strtok(pointsFname,filesep));
+end
+out.voxelSize = voxelSize;
 out.atlas=CACHED_ATLAS; %The atlas data minus the actual atlas volume
 out.rawSparseData=pointsData; %The raw points data from the original points file
 
 
-%The order of the columns used to determine the brain area location. Must be ordered in the dims of the MHD
+%The order of the columns used to determine the brain area location. 
+%Must be ordered in the dims of the MHD
 %The last three columns should be the point location data. 
 %With a tree file, there will be 5 columns as the first two are the node ID and parent node ID. 
 %With a MaSIV points file, the first column will be the cell series ID
@@ -166,7 +189,8 @@ out.notes='';
 
 
 %This is a map that contains the different data formats
-out.pointsInARA.rawSparseData = aratools.sparse.assignToARA(out,pointsData);
+out.pointsInARA.rawSparseData = aratools.sparse.assignToARA(out,pointsData, ...
+    'diagnosticPlot', diagnosticPlot);
 
 
 
@@ -174,23 +198,23 @@ out.pointsInARA.rawSparseData = aratools.sparse.assignToARA(out,pointsData);
 
 %Step 1: find the orginal sparse data file
 tok=regexp(pointsFname,['(.*?',filesep,')'],'tokens');
-pathToSparseData = fullfile(tok{1}{1},'sparsedata');
+if ~isempty(tok) % do not do that if pointsFname is empty, i.e. you gave a matrix
+    pathToSparseData = fullfile(tok{1}{1},'sparsedata');
+    [~,tracedCSVfName] = fileparts(pointsFname);
+    originalSparseDataFile = fullfile(pathToSparseData, regexprep(tracedCSVfName,'_tree.*','.mat'));
 
-[~,tracedCSVfName] = fileparts(pointsFname);
-originalSparseDataFile = fullfile(pathToSparseData, regexprep(tracedCSVfName,'_tree.*','.mat'));
 
-
-%Step 2: if it's available, we load it, find the correctr trace and store this in the output structure
-if exist(originalSparseDataFile,'file')
-    tok=regexp(pointsFname,'_tree_(\d+)','tokens'); %Get the trace number
-    traceNumber = str2num(tok{1}{1});
-    fprintf('Incorporating original trace data from trace %d of this sample\n',traceNumber)
-    load(originalSparseDataFile)
-    out.origTrace=neurite_markers{traceNumber};
-else
-    fprintf('Can not find original sparse data file at %s\n')
+    %Step 2: if it's available, we load it, find the correctr trace and store this in the output structure
+    if exist(originalSparseDataFile,'file')
+        tok=regexp(pointsFname,'_tree_(\d+)','tokens'); %Get the trace number
+        traceNumber = str2num(tok{1}{1});
+        fprintf('Incorporating original trace data from trace %d of this sample\n',traceNumber)
+        load(originalSparseDataFile)
+        out.origTrace=neurite_markers{traceNumber};
+    else
+        fprintf('Can not find original sparse data file at %s\n')
+    end
 end
-
 
 if nargout>0
     varargout{1}=out;
