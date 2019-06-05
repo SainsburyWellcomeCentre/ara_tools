@@ -131,7 +131,7 @@ elseif isstruct(voxelSize)
   assignin('base',varName,LOADED_ARA)
 
 else
-  fprintf('%s -- Unknown input argument type. Doing nothing\n', mfilename)  
+  fprintf('%s -- Unknown input argument type "%s" for "voxelSize". Doing nothing\n', mfilename, class(voxelSize))
 end
 
 

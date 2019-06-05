@@ -31,8 +31,7 @@ out.structureList.areaBoundaries(:)={};
 out.structureList.areaHemisphere(:)={};
 for ind = 1:height(projectedAtlasStuct.structureList)
     R = projectedAtlasStuct.projectedAtlas==projectedAtlasStuct.structureList.id(ind);
-
-    R = imerode(imdilate(R,strel('disk',dilateSize)),strel('disk',dilateSize));
+    R = imerode(imdilate(R,strel('disk',dilateSize)),strel('disk',dilateSize-1));
     [B,L] = bwboundaries(R);
 
     if isempty(B)

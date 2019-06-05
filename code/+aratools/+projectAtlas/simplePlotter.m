@@ -92,7 +92,6 @@ function varargout=simplePlotter(projectionStructure,subCorticalInd)
                 end
             end
             areaMask = any(areaMask,3);
-
             B=bwboundaries(areaMask);
             for kk=1:length(B)
                 H.subCort(end+1)=plot(B{kk}(:,2),B{kk}(:,1),'r--');
