@@ -25,6 +25,7 @@
 (HowToCombineTransforms "Compose")
 
 (WriteTransformParametersEachIteration "false")
+(ResultImageFormat "tiff")
 (WriteResultImage "true")
 (CompressResultImage "false")
 (WriteResultImageAfterEachResolution "false")
