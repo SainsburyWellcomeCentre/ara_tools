@@ -98,8 +98,8 @@ end
 
 
 %Figure out which atlas to use
-mhdFile = getDownSampledMHDFile;
-if isempty(mhdFile)
+dsFile = aratools.getDownSampledFile;
+if isempty(dsFile)
     return %warning message already issued
 end
 
@@ -109,7 +109,7 @@ if isempty(templateFile)
 end
 
 %The path to the sample file
-sampleFile = fullfile(downsampleDir,mhdFile);
+sampleFile = fullfile(downsampleDir,dsFile);
 if ~exist(sampleFile,'file')
     fprintf('Can not find sample file at %s\n', sampleFile), return
 end
@@ -118,7 +118,13 @@ end
 %load the images
 fprintf('Loading image volumes...')
 templateVol = mhd_read(templateFile);
-sampleVol = mhd_read(sampleFile);
+[~,~,ext] = fileparts(sampleFile);
+switch ext
+    case '.mhd'
+        sampleVol = mhd_read(sampleFile);
+    case '.tif'
+        sampleVol = aratools.loadTiffStack(sampleFile);
+end
 fprintf('\n')
 
 

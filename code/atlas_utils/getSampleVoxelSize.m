@@ -1,5 +1,5 @@
 function voxelSize = getSampleVoxelSize(expDir)
-% Called from sample directory. Calculates voxel size of the downsampled data
+% Called from sample directory. Determines voxel size of the downsampled data
 %
 % function voxelSize = getSampleVoxelSize(expDir)
 %
@@ -9,11 +9,10 @@ function voxelSize = getSampleVoxelSize(expDir)
 % Inputs
 % expDir - [optional] relative or absolute path to sample directory
 %          if expDir is missing, look in the current directory. 
-%           (see also getDownSampledMHDFile)
-% 
+%           (see also aratools.getDownSampledFile)
+%
 % Outputs
 % voxelSize - a string defining the downsampled voxel size. e.g. 25 or 10
-%
 %
 %
 % Rob Campbell - Basel 2015
@@ -22,22 +21,23 @@ if nargin==0 | isempty(expDir)
     expDir=['.',filesep];
 end
 
-mhdFile = getDownSampledMHDFile(expDir);
-if isempty(mhdFile)
+dsFile = aratools.getDownSampledFile(expDir);
+if isempty(dsFile)
+    fprintf('%s finds no suitable downsampled file\n',mfilename)
     return
 end
 
 %Get the voxel size from the file name
 
-tok=regexp(mhdFile,'.*_(\d)+_(\d+)_','tokens');
+tok=regexp(dsFile,'.*_(\d)+_(\d+)_','tokens');
 if isempty(tok)
-    fprintf('%s - Can not find voxel size from file name %s\n', mfilename, mhdFile), return
+    fprintf('%s - Can not find voxel size from file name %s\n', mfilename, dsFile), return
 end
 tok=tok{1};
 
 
 if length(tok)~=2
-    fprintf('%s - Did not find two voxel size numbers in file name %s\n', mfilename, mhdFile), return
+    fprintf('%s - Did not find two voxel size numbers in file name %s\n', mfilename, dsFile), return
 end
 
 
