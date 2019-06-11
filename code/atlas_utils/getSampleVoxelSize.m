@@ -29,7 +29,7 @@ end
 
 %Get the voxel size from the file name
 
-tok=regexp(dsFile,'.*_(\d)+_(\d+)_','tokens');
+tok=regexp(dsFile,'.*_([012345]\d)_([012345]\d)_0\d','tokens');
 if isempty(tok)
     fprintf('%s - Can not find voxel size from file name %s\n', mfilename, dsFile), return
 end
