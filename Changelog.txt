@@ -1,2 +1,14 @@
 Changelog
 
+
+3/07/2019
+The following changes may break previous behavior
+- transformSparsePoints now just treats the last three columns as being point coordinates.
+- invertExportedSparseFiles no longer relies on the logging file
+
+27/07/2019
+ARA_tools will slowly become more general purpose and may no longer work with older data. 
+There is a commit tag to indicate the point beyond which compatibility with Han 2017 is no longer guaranteed. 
+
+28/07/2019
+Running "aratools.rescaleAllSparsePoints" in data dir will rescale sparse points CSV files in the format Z,X,Y

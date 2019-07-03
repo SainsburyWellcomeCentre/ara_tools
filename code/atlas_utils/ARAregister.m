@@ -5,11 +5,17 @@ function ARAregister(varargin)
 %
 % Purpose
 % Register sample brain to the ARA (Allen Reference Atlas) in various ways. 
-% This function is run after downsampleVolumeAndData
+% This function assumes you have a directory containing your brain in the same
+% voxel size as the ARA. You can generate this for instance, by running the
+% downsampleAllChannels command from stitchit. This will produce a directory
+% called downsampledStacks_25. 
+%
 % By default this function:
 % 1. Registers the ARA template TO the sample.
 % 2. Registers the sample to the ARA template.
-% 3. If (2) was done, the inverse transform of it is also calculated.
+% 3. If (2) was done, the inverse transform of it is also calculated and applied
+%    to both volume images and sparse data.
+%
 %
 % The results are saved to downsampleDir
 %
@@ -36,7 +42,7 @@ function ARAregister(varargin)
 %
 %
 % For more details see the repository ReadMe file and als see the wiki
-% (https://bitbucket.org/lasermouse/ara_tools/wiki/Example_1_basic_registering). 
+% (https://github.com/SainsburyWellcomeCentre/ara_tools/wiki/Example-1-basic-registering). 
 %
 %
 % Examples
@@ -48,6 +54,9 @@ function ARAregister(varargin)
 %
 %
 % Rob Campbell - Basel, 2015
+%
+% Also see from this repository:
+% invertExportedSparseFiles (and transformSparsePoints), aratools.rescaleAllSparsePoints
 
 
 
@@ -70,7 +79,7 @@ params.addParamValue('elastixParams',elastix_params_default,@iscell)
 
 
 params.parse(varargin{:});
-downsampleDir = params.Results.downsampleDir;
+downsampleDir = aratools.getDownSampledDir;
 ara2sample = params.Results.ara2sample;
 sample2ara = params.Results.sample2ara;
 suppressInvertSample2ara = params.Results.suppressInvertSample2ara;
@@ -102,6 +111,12 @@ dsFile = aratools.getDownSampledFile;
 if isempty(dsFile)
     return %warning message already issued
 end
+
+if iscell(dsFile) && length(dsFile)
+    % TODO -- for now just pick the first downsampled file and work with that. 
+    dsFile = dsFile{1};
+end
+
 
 templateFile = getARAfnames;
 if isempty(templateFile)

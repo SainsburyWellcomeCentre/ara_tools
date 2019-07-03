@@ -5,7 +5,9 @@ function transformSparsePoints(csvName,params,fname)
 %
 % Purpose
 % Run an Elastix transform on sparse points or a tree exported from MaSIV.
-% Useful for registering points to ARA following an inverse transform.
+% Useful for registering points to ARA following an inverse transform. The
+% main purpose of this wralper function is to reshuffle the columns of data
+% going into transformix then being returned from transformix.
 % 
 %
 % Inputs
@@ -32,19 +34,22 @@ else
     fprintf('csvName should be a valid path to a csv file')
 end
 
-if size(data,2)==5
-    indexOffset=2;
-elseif size(data,2)==3
-    indexOffset=0;
-else
-    fprintf('Number of columns is %d. Expected 5 or 3 columns. Aborting\n',size(data,2))
+% We will assume the last three columns contain z, x, and y positions of 
+% each data point. For instance, there will be 5 columns for neurite trees
+% exported from MaSIV, with column one being the node ID and two being the
+% parent node ID. Data with only 3 columns are sparse points, such as cell 
+% locations or electrode tracks.
+indexOffset = size(data,2)-3; %The column at which to start reading point data
+if indexOffset<0
+    fprintf('%s finds that file %s has only %d columns. Expected at least three\n',...
+        mfilename, size(data,2))
+    return
 end
 
+% Changes column order for transformix, runs the transform, then changes it back
 tmpData = data(:,[2,3,1]+indexOffset);
-
 transformed = transformix(tmpData,params);
-
 data(:,(1:3)+indexOffset) = transformed.OutputPoint(:,[3,1,2]);
 
-
+fprintf('\n%s is writing transformed points to %s\n', mfilename, fname)
 csvwrite(fname,data)

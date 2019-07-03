@@ -1,13 +1,14 @@
-function rescaleAllSparsePoints()
+function rescaleAllSparsePoints
 % Downsample sparse point data to ARA voxel size
 %
-% function rescaleAllSparsePoints()
+% function rescaleAllSparsePoints
 %
 % Purpose
 % Loop through all sparse data in the "sparsedata" directory and rescale it
 % to the ARA voxel size. Save rescaled versions in the downsampled data directory.
 %
-%
+% How To Use:
+% cd to sample directory then run aratools.rescaleAllSparsePoints
 %
 %
 % Rob Campbell - SWC - June, 2019
@@ -25,9 +26,6 @@ function rescaleAllSparsePoints()
 
 
 S=settings_handler('settingsFiles_ARAtools.yml');
-
-verbose=true;
-
 
 downsampledDir = aratools.getDownSampledDir;
 if isempty(downsampledDir)
@@ -47,31 +45,27 @@ downSampledTextFile=fullfile(downsampledDir,[fName,'.txt']);
 
 %Attempt to extract downsampled data from the text file
 downSample = getDownSampleAmountFromFile(downSampledTextFile);
-
-
 fprintf('Down-sampling by %0.3f in x/y and %0.3f in z\n',downSample)
 
 
 %Resample the sparse data
-
-
 logFileName = S.sparseDataLogName;
 fid=fopen(fullfile(downsampledDir,logFileName),'w');
 
-if ~exist('sparsepoints','dir')
-    fprintf('%s finds no sparsepoints directory\n',mfilename)
+if ~exist('sparsedata','dir')
+    fprintf('%s finds no sparsedata directory\n',mfilename)
     return
 end
 
-spFiles = dir(fullfile('sparsepoints', '*.csv'));
+spFiles = dir(fullfile('sparsedata', '*.csv'));
 
 if length(spFiles)==0
-    fprintf('%s finds no sparse points in directory "sparsepoints"\n',...
+    fprintf('%s finds no sparse points in directory "sparsedata"\n',...
         mfilename)
 end
 
 for ii=1:length(spFiles)
-    tFname = fullfile('sparsepoints',spFiles(ii).name);
+    tFname = fullfile('sparsedata',spFiles(ii).name);
     data = downSamplePointMatrix(tFname,downSample);
     csvwrite(fullfile(downsampledDir,spFiles(ii).name),data)
     msg = sprintf('Wrote data to: %s\n', tFname);
