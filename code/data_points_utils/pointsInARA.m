@@ -121,6 +121,7 @@ if ~ischar(pointsData)
     pointsFname='';
 else
     pointsFname=pointsData;
+    pointsData=csvread(pointsFname);
 end
 
 %Start building the output structure
