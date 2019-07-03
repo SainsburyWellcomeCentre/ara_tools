@@ -17,13 +17,7 @@
 %          from a tree .mat file or a MaSIV points .yml file. The only constraint 
 %          is that the last three columns of this file should be the x, y, and z
 %          locations of the data point. 
-%          ** If it was a tree AND we run in batch mode then we also resample the tree to **
-%          ** a resolution of 5 microns and get the area associated with each point.      **
 %          b) the imported matrix from one of the above points files.
-%          c) a path within a sample directory (BATCH MODE). e.g. 'downsampled/sample2ARA/'
-%             In this case pointsInARA is called from the root dir of all experiments 
-%             and iterates through all experiments, processing each in turn. See example 2, 
-%             below. When called this way, results are saved as mat files in each directory.
 %
 % Inputs (optional - param/value pairs)
 % 'voxelSize' - The size of the voxel of the ara used. If not provided will
@@ -46,8 +40,8 @@
 % Examples
 % 1. 
 % >> aratools.cacheAtlasToWorkSpace(25)
-% >> cd YH163
-% >> out=pointsInARA('downsampled/sample2ARA/YH163_traced_cells_tree_01.csv')
+% >> cd XYZ_163
+% >> out=pointsInARA('downsampled/sample2ARA/XYZ_163_traced_cells_tree_01.csv')
 %
 % out = 
 %
@@ -57,26 +51,36 @@
 %   voxelSize: [string]
 %
 %
-% 2.  (BATCH MODE)
-% >> cd ~/sonastv/Data/Mrsic-Flogel/hanyu
-% >> pointsInARA('downsampled/sample2ARA')
+% 2. 
+% >> dat = cscread('/path/to/data.csv');
+% >> out=pointsInARA(dat);
 %
-% ENTERING BATCH MODE
-% 1/14. analysing YH102_150615/downsampled/sample2ARA/YH102_traced_cells.csv
-% 2/14. analysing YH121_150707/downsampled/sample2ARA/YH121_traced_cells_01.csv
-% 3/14. analysing YH124_150713/downsampled/sample2ARA/YH124_traced_cells_01.csv
-% ...
+% 3. 
+% Finding the brain area associated with each point using a function from
+% https://github.com/SainsburyWellcomeCentre/AllenBrainAPI
+% >> out=pointsInARA('downsampled/sample2ARA/XYZ_163_traced_cells_tree_01.csv')
+% >> >> structureID2name( unique(out.pointsInARA.rawSparseData.ARAindex))'
 %
-% %Here is where the data are saved: 
-% >>  ls YH102_150615/downsampled/sample2ARA/YH102_*mat
-% YH102_150615/downsampled/sample2ARA/YH102_traced_cells_pointsInARA.mat
+% ans =
+%
+%  18x1 cell array
+%
+%    {'Superior colliculus, motor related, intermediate gray layer'            }
+%    {'Superior colliculus, motor related, intermediate white layer'           }
+%    {'Superior colliculus, motor related, deep gray layer'                    }
+%    {'posteromedial visual area, layer 2/3'                                   }
+%    {'ventricular systems'                                                    }
+%    {'Midbrain reticular nucleus'                                             }
+%    {'Retrosplenial area, dorsal part, layer 6a'                              }
+%    etc, etc ...
 %
 %
 % --
 % Rob Campbell - Basel 2105
+% Rob Campbell - SWC 2019 -- gut function of batch stuff and simplify **BREAKS OLD BEHAVIOR**
 %
 %
-% See also: brainAreaBarChart, pointsByAreaPlot
+% See also: brainAreaBarChart, pointsByAreaPlot, aratools.sparse.assignToARA
 
 
 CACHED_ATLAS = aratools.atlascacher.getCachedAtlas;
@@ -106,54 +110,6 @@ diagnosticPlot = params.Results.diagnosticPlot;
 % - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 
-%------------------------------------------------------------------------------------------------------------
-% 
-% read data if the user has supplied a path to a points file
-if ischar(pointsData) %enter recursive function call
-    if ~contains(pointsData,'.csv')
-        fprintf('ENTERING BATCH MODE\n\n')
-
-        [dirs,details] = aratools.utils.returnProcessedExperiments(pointsData); %Read csv file "analysis_log.csv" and process all cells listed within it
-        if isempty(dirs)
-            fprintf('Found no directories with pattern %s\n',pointsData)
-            return
-        end
-        fprintf('Found %d data directories\n',length(dirs))
-
-        for ii=1:length(dirs)
-            csvFiles = dir(fullfile(dirs{ii},'*.csv'));
-            if ~isempty(csvFiles)
-                for jj=1:length(csvFiles)
-                    pathToCSV = fullfile(dirs{ii},csvFiles(jj).name);
-                    fprintf('%d/%d. analysing %s -- %s\n',ii,length(dirs),pathToCSV, details(ii).notes)
-                    ARApoints = pointsInARA(pathToCSV);
-                    ARApoints.pointsDataArg=pointsData;
-                    ARApoints.notes = details(ii).notes;
-                    saveName = strrep(csvFiles(jj).name,'.csv','_pointsInARA.mat');
-                    saveName = fullfile(dirs{ii},saveName);
-                    fprintf(' ==> saving to %s\n\n',saveName)
-                    save(saveName,'ARApoints')
-                end
-            end
-        end
-        
-        fprintf('\nAll samples processed and data saved.\n ')
-        return
-    end
-    if ~exist(pointsData,'file')
-        fprintf('%s: can not find points file %s. Quitting\n', mfilename, pointsData)
-        return
-    end
-    pointsFname = pointsData;
-    pointsData = csvread(pointsFname);
-
-    if nargout>0
-        varargout{1}=[];
-    end
-else
-    pointsFname='';
-end
-%------------------------------------------------------------------------------------------------------------
 
 
 %Remove the atlas data from the atlas data structure and store the remanining meta-data
@@ -161,18 +117,19 @@ end
 atlasVolume=CACHED_ATLAS.atlasVolume;
 CACHED_ATLAS.atlasVolume=[];
 
+if ~ischar(pointsData)
+    pointsFname='';
+else
+    pointsFname=pointsData;
+end
 
 %Start building the output structure
 out.pointsFname=pointsFname;  %File name of the downsampled (and likely transformed) sparse points file
 out.pointsDataArg=[];  %This is the argument with which we we called pointsInARA. If we did batchmode, we'll know what was done with this arg
 
-if isempty(pointsFname)
-    % TODO should we remove that warning?
-    fprintf('WARNING: something is wrong in pointsInARA, the variable "pointsFname" is empty\n')
-end
 
 if isempty(voxelSize)
-    voxelSize=getSampleVoxelSize(strtok(pointsFname,filesep));
+    voxelSize=getSampleVoxelSize;
 end
 out.voxelSize = voxelSize;
 out.atlas=CACHED_ATLAS; %The atlas data minus the actual atlas volume
@@ -192,29 +149,6 @@ out.notes='';
 out.pointsInARA.rawSparseData = aratools.sparse.assignToARA(out,pointsData, ...
     'diagnosticPlot', diagnosticPlot);
 
-
-
-%Now we save a copy of the original traces from the neurite tracer
-
-%Step 1: find the orginal sparse data file
-tok=regexp(pointsFname,['(.*?',filesep,')'],'tokens');
-if ~isempty(tok) % do not do that if pointsFname is empty, i.e. you gave a matrix
-    pathToSparseData = fullfile(tok{1}{1},'sparsedata');
-    [~,tracedCSVfName] = fileparts(pointsFname);
-    originalSparseDataFile = fullfile(pathToSparseData, regexprep(tracedCSVfName,'_tree.*','.mat'));
-
-
-    %Step 2: if it's available, we load it, find the correctr trace and store this in the output structure
-    if exist(originalSparseDataFile,'file')
-        tok=regexp(pointsFname,'_tree_(\d+)','tokens'); %Get the trace number
-        traceNumber = str2num(tok{1}{1});
-        fprintf('Incorporating original trace data from trace %d of this sample\n',traceNumber)
-        load(originalSparseDataFile)
-        out.origTrace=neurite_markers{traceNumber};
-    else
-        fprintf('Can not find original sparse data file at %s\n')
-    end
-end
 
 if nargout>0
     varargout{1}=out;
