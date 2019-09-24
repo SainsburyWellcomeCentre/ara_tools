@@ -112,11 +112,34 @@ if isempty(dsFile)
     return %warning message already issued
 end
 
-if iscell(dsFile) && length(dsFile)
-    % TODO -- for now just pick the first downsampled file and work with that. 
-    dsFile = dsFile{1};
-end
 
+if iscell(dsFile)
+    if length(dsFile) == 1
+        dsFile = dsFile{1};
+    else
+        %Display choices to screen and allow user to choose which volume to register
+        fprintf('\n Which volume do you want to use for registration?\n')
+        for ii=1:length(dsFile)
+            fprintf('%d. %s\n',ii,dsFile{ii})
+        end
+        qs=sprintf('[1 .. %d]? ', length(dsFile));
+        OUT = [];
+        while isempty(OUT)
+            OUT = input(qs,'s');
+            OUT = str2num(OUT);
+            if ~isempty(OUT) && OUT>=1 && OUT<=length(dsFile)
+                break
+            else
+                OUT=[];
+            end
+        end
+
+        dsFile = dsFile{OUT};
+        fprintf('\nRunning registration on volume %s\n\n',dsFile)
+
+    end
+
+end
 
 templateFile = getARAfnames;
 if isempty(templateFile)
