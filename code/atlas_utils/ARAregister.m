@@ -28,13 +28,13 @@ function ARAregister(varargin)
 % Inputs (optional parameter/value pairs)
 % 'downsampleDir' - String defining the directory that contains the downsampled data. 
 %                   By default uses value from toolbox YML file (see source code for now).
-% ara2sample - [bool, default true] whether to register the ARA to the sample
-% sample2ara - [bool, default true] whether to register the sample to the ARA
-% suppressInvertSample2ara - [bool. default false] if true, the inverse transform is not
+% 'ara2sample' - [bool, default true] whether to register the ARA to the sample
+% 'sample2ara' - [bool, default true] whether to register the sample to the ARA
+% 'suppressInvertSample2ara' - [bool. default false] if true, the inverse transform is not
 %                            calculated if the sample2ara transform is performed.
 %                            You need the inverse transform if you want to go on to 
 %                            register sparse points to the ARA. 
-% elastixParams - paths to parameter files. By default we use those in ARA_tools/elastix_params/
+% 'elastixParams' - paths to parameter files. By default we use those in ARA_tools/elastix_params/
 %
 %
 % Outputs
@@ -85,6 +85,8 @@ sample2ara = params.Results.sample2ara;
 suppressInvertSample2ara = params.Results.suppressInvertSample2ara;
 elastixParams = params.Results.elastixParams;
 
+
+
 if ~exist(downsampleDir,'dir')
     fprintf('Failed to find downsampled directory %s\n', downsampleDir), return
 end
@@ -101,8 +103,6 @@ for ii=1:length(elastixParams)
         error('Can not find elastix param file %s',elastixParams{ii})
     end
 end
-
-
 
 
 
@@ -153,6 +153,10 @@ if ara2sample
         fprintf('Failed to make directory %s\n',elastixDir)
     else
         fprintf('Conducting registration in %s\n',elastixDir)
+
+        % Info on what was registered is logged here
+        logFname = fullfile(elastixDir,'ARA_reg_log.txt');
+        logRegInfoToFile(logFname,sprintf('Registered volume file: %s\n', sampleFile))
         elastix(templateVol,sampleVol,elastixDir,elastixParams)
 
         %optionally remove files used to conduct registration 
@@ -191,3 +195,18 @@ if ~suppressInvertSample2ara
 end
 
 fprintf('\nFinished\n')
+
+
+
+
+function logRegInfoToFile(fname,dataToLog)
+    %Write string dataToLog to fname. 
+    %This little function is just to make it easier to log identity of the channel being registered 
+
+    fid = fopen(fname,'w+');
+    if fid<0
+        fprintf('FAILED TO WRITE LOG DATA TO FILE %s\n',fname)
+        return
+    end
+    fprintf(fid,dataToLog);
+    fclose(fid);
