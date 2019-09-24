@@ -180,8 +180,10 @@ if ara2sample
         % Info on what was registered is logged here
         logFname = fullfile(elastixDir,'ARA_reg_log.txt');
         logRegInfoToFile(logFname,sprintf('Registered volume file: %s\n', sampleFile))
-        elastix(templateVol,sampleVol,elastixDir,elastixParams)
-
+        [~,params]=elastix(templateVol,sampleVol,elastixDir,elastixParams);
+        if isnan(params.TransformParameters)
+            fprintf('\n\n\t** Transforming the ARA to the sample failed (see above).\n\t** Check Elastix parameters and your sample volumes\n\n')
+        end
         %optionally remove files used to conduct registration 
         if S.removeMovingAndFixed
             delete(fullfile(elastixDir,[S.ara2sampleDir,'_moving*']))
@@ -200,7 +202,12 @@ if sample2ara
         fprintf('Failed to make directory %s\n',elastixDir)
     else
         fprintf('Conducting registration in %s\n',elastixDir)
-        elastix(sampleVol,templateVol,elastixDir,elastixParams)
+        [~,params]=elastix(sampleVol,templateVol,elastixDir,elastixParams);
+        if isnan(params.TransformParameters)
+            fprintf('\n\n\t** Transforming the sample to the ARA failed (see above).\n\t** Check Elastix parameters and your sample volumes\n')
+            fprintf('\t** Not initiating inverse transform.\n\n')
+            return
+        end
     end
 
 if ~suppressInvertSample2ara
