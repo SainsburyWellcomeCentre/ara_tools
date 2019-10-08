@@ -28,7 +28,7 @@
 (AutomaticScalesEstimation "true")
 
 (WriteTransformParametersEachIteration "false")
-(WriteResultImage "false")
+(WriteResultImage "true")
 (ResultImageFormat "tiff")
 (CompressResultImage "false")
 (WriteResultImageAfterEachResolution "false") 

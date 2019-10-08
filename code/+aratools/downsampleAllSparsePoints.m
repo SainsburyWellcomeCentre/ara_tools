@@ -1,14 +1,11 @@
-function downsampleVolumeAndData(channel,targetDims,dataFilename,forceOverWriteVol,verbose)
-% Downsample sample brain and derived data to Allen Atlas (ARA)
+function downsampleAllSparsePoints()
+% Downsample sparse point data to ARA voxel size
 %
-% function downsampleVolumeAndData(channel,targetDims,dataFilename,forceOverWriteVol)
-%
-% ** DEPRECATED FUNCTION ***
+% function downsampleAllSparsePoints()
 %
 % Purpose
-% Given a channel number, target image dimensions and the name of the
-% derived data file name, downsample the sample brain and the derived 
-% data to the Allen Atlas (ARA) size. 
+% Loop through all sparse data in the "sparsedata" directory and downample it
+% to the ARA voxel size. 
 %
 %
 % INPUTS

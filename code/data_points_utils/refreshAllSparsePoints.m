@@ -14,6 +14,9 @@ function refreshAllSparsePoints
 % 
 
 
+fprintf('\n\n** %s IS A DEPRECATED FUNCTION THAT IS PRETTY SPECIFIC TO DATA FROM HAN 2017 ***\n\n', ...
+        upper(mfilename) )
+
 voxSize=25;
 
 S=settings_handler('settingsFiles_ARAtools.yml');
