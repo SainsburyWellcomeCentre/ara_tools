@@ -5,11 +5,17 @@ function ARAregister(varargin)
 %
 % Purpose
 % Register sample brain to the ARA (Allen Reference Atlas) in various ways. 
-% This function is run after downsampleVolumeAndData
+% This function assumes you have a directory containing your brain in the same
+% voxel size as the ARA. You can generate this for instance, by running the
+% downsampleAllChannels command from stitchit. This will produce a directory
+% called downsampledStacks_25. 
+%
 % By default this function:
 % 1. Registers the ARA template TO the sample.
 % 2. Registers the sample to the ARA template.
-% 3. If (2) was done, the inverse transform of it is also calculated.
+% 3. If (2) was done, the inverse transform of it is also calculated and applied
+%    to both volume images and sparse data.
+%
 %
 % The results are saved to downsampleDir
 %
@@ -22,13 +28,13 @@ function ARAregister(varargin)
 % Inputs (optional parameter/value pairs)
 % 'downsampleDir' - String defining the directory that contains the downsampled data. 
 %                   By default uses value from toolbox YML file (see source code for now).
-% ara2sample - [bool, default true] whether to register the ARA to the sample
-% sample2ara - [bool, default true] whether to register the sample to the ARA
-% suppressInvertSample2ara - [bool. default false] if true, the inverse transform is not
+% 'ara2sample' - [bool, default true] whether to register the ARA to the sample
+% 'sample2ara' - [bool, default true] whether to register the sample to the ARA
+% 'suppressInvertSample2ara' - [bool. default false] if true, the inverse transform is not
 %                            calculated if the sample2ara transform is performed.
 %                            You need the inverse transform if you want to go on to 
 %                            register sparse points to the ARA. 
-% elastixParams - paths to parameter files. By default we use those in ARA_tools/elastix_params/
+% 'elastixParams' - paths to parameter files. By default we use those in ARA_tools/elastix_params/
 %
 %
 % Outputs
@@ -36,7 +42,7 @@ function ARAregister(varargin)
 %
 %
 % For more details see the repository ReadMe file and als see the wiki
-% (https://bitbucket.org/lasermouse/ara_tools/wiki/Example_1_basic_registering). 
+% (https://github.com/SainsburyWellcomeCentre/ara_tools/wiki/Example-1-basic-registering). 
 %
 %
 % Examples
@@ -48,6 +54,9 @@ function ARAregister(varargin)
 %
 %
 % Rob Campbell - Basel, 2015
+%
+% Also see from this repository:
+% invertExportedSparseFiles (and transformSparsePoints), aratools.rescaleAllSparsePoints
 
 
 
@@ -70,11 +79,13 @@ params.addParamValue('elastixParams',elastix_params_default,@iscell)
 
 
 params.parse(varargin{:});
-downsampleDir = params.Results.downsampleDir;
+downsampleDir = aratools.getDownSampledDir;
 ara2sample = params.Results.ara2sample;
 sample2ara = params.Results.sample2ara;
 suppressInvertSample2ara = params.Results.suppressInvertSample2ara;
 elastixParams = params.Results.elastixParams;
+
+
 
 if ~exist(downsampleDir,'dir')
     fprintf('Failed to find downsampled directory %s\n', downsampleDir), return
@@ -95,12 +106,39 @@ end
 
 
 
-
-
 %Figure out which atlas to use
 dsFile = aratools.getDownSampledFile;
 if isempty(dsFile)
     return %warning message already issued
+end
+
+
+if iscell(dsFile)
+    if length(dsFile) == 1
+        dsFile = dsFile{1};
+    else
+        %Display choices to screen and allow user to choose which volume to register
+        fprintf('\n Which volume do you want to use for registration?\n')
+        for ii=1:length(dsFile)
+            fprintf('%d. %s\n',ii,dsFile{ii})
+        end
+        qs=sprintf('[1 .. %d]? ', length(dsFile));
+        OUT = [];
+        while isempty(OUT)
+            OUT = input(qs,'s');
+            OUT = str2num(OUT);
+            if ~isempty(OUT) && OUT>=1 && OUT<=length(dsFile)
+                break
+            else
+                OUT=[];
+            end
+        end
+
+        dsFile = dsFile{OUT};
+        fprintf('\nRunning registration on volume %s\n\n',dsFile)
+
+    end
+
 end
 
 templateFile = getARAfnames;
@@ -138,8 +176,14 @@ if ara2sample
         fprintf('Failed to make directory %s\n',elastixDir)
     else
         fprintf('Conducting registration in %s\n',elastixDir)
-        elastix(templateVol,sampleVol,elastixDir,elastixParams)
 
+        % Info on what was registered is logged here
+        logFname = fullfile(elastixDir,'ARA_reg_log.txt');
+        logRegInfoToFile(logFname,sprintf('Registered volume file: %s\n', sampleFile))
+        [~,params]=elastix(templateVol,sampleVol,elastixDir,elastixParams);
+        if ~iscell(params.TransformParameters)
+            fprintf('\n\n\t** Transforming the ARA to the sample failed (see above).\n\t** Check Elastix parameters and your sample volumes\n\n')
+        end
         %optionally remove files used to conduct registration 
         if S.removeMovingAndFixed
             delete(fullfile(elastixDir,[S.ara2sampleDir,'_moving*']))
@@ -158,7 +202,12 @@ if sample2ara
         fprintf('Failed to make directory %s\n',elastixDir)
     else
         fprintf('Conducting registration in %s\n',elastixDir)
-        elastix(sampleVol,templateVol,elastixDir,elastixParams)
+        [~,params]=elastix(sampleVol,templateVol,elastixDir,elastixParams);
+        if ~iscell(params.TransformParameters)
+            fprintf('\n\n\t** Transforming the sample to the ARA failed (see above).\n\t** Check Elastix parameters and your sample volumes\n')
+            fprintf('\t** Not initiating inverse transform.\n\n')
+            return
+        end
     end
 
 if ~suppressInvertSample2ara
@@ -176,3 +225,18 @@ if ~suppressInvertSample2ara
 end
 
 fprintf('\nFinished\n')
+
+
+
+
+function logRegInfoToFile(fname,dataToLog)
+    %Write string dataToLog to fname. 
+    %This little function is just to make it easier to log identity of the channel being registered 
+
+    fid = fopen(fname,'w+');
+    if fid<0
+        fprintf('FAILED TO WRITE LOG DATA TO FILE %s\n',fname)
+        return
+    end
+    fprintf(fid,dataToLog);
+    fclose(fid);

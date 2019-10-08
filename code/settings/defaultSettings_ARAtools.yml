@@ -1,5 +1,5 @@
-volFormat: mhd
-downSampledDir: downsampled
+volFormat: tiff
+downSampledDir: downsampledStacks_
 extractedDataDir: sparsedata
 araDir: ~/tvoucan/Mrsic-Flogel/ReferenceAtlas/ARA_CCFv3/
 araSubDirFormat: ARA_%s_micron_mhd
