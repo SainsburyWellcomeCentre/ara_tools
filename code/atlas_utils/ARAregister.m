@@ -26,14 +26,25 @@ function ARAregister(varargin)
 %
 %
 % Inputs (optional parameter/value pairs)
+% 
+% 'mult' - An int to multiply the image pixel values: to help fill the
+%           histogram for better registration?
+% 
+% 'adjHistogram' - [bool, default true] whether to fill the histogram with
+%                   imadjustn() using default settings (1% pixels are under and over exposed)
+% 
 % 'downsampleDir' - String defining the directory that contains the downsampled data. 
 %                   By default uses value from toolbox YML file (see source code for now).
+% 
 % 'ara2sample' - [bool, default true] whether to register the ARA to the sample
+% 
 % 'sample2ara' - [bool, default true] whether to register the sample to the ARA
+% 
 % 'suppressInvertSample2ara' - [bool. default false] if true, the inverse transform is not
 %                            calculated if the sample2ara transform is performed.
 %                            You need the inverse transform if you want to go on to 
 %                            register sparse points to the ARA. 
+% 
 % 'elastixParams' - paths to parameter files. By default we use those in ARA_tools/elastix_params/
 %
 %
@@ -66,6 +77,7 @@ S=settings_handler('settingsFiles_ARAtools.yml');
 params = inputParser;
 params.CaseSensitive=false;
 
+% Params to optionally adjust histogram
 params.addParamValue('mult',1, @isnumeric)
 params.addParamValue('adjHistogram',false,@(x) islogical(x) || x==1 || x==0)
 
