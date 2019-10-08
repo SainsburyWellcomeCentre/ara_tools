@@ -35,6 +35,10 @@ function ARAregister(varargin)
 %                            You need the inverse transform if you want to go on to 
 %                            register sparse points to the ARA. 
 % 'elastixParams' - paths to parameter files. By default we use those in ARA_tools/elastix_params/
+% 'channel' - If missing an interactive selector at the command line appears. If present,
+%             channelToRegister should be an integer that corresponds channel IDs embdedded 
+%             in downsampled file names. For example: dsXYZ001_25_25_02.tiff is channel 2.
+%             NOTE: this input is ignored if only one downsampled file is present. 
 %
 %
 % Outputs
@@ -51,6 +55,9 @@ function ARAregister(varargin)
 %
 % - Run with another set of parameter files
 % >> ARAregister('elastix_params','ParamBSpline.txt'})
+%
+% - Run on channel 4
+% >> ARAregister('channel',4)
 %
 %
 % Rob Campbell - Basel, 2015
@@ -69,6 +76,7 @@ params.CaseSensitive=false;
 params.addParamValue('downsampleDir',fullfile(pwd,S.downSampledDir),@ischar)
 params.addParamValue('ara2sample',true,@(x) islogical(x) || x==1 || x==0)
 params.addParamValue('sample2ara',true,@(x) islogical(x) || x==1 || x==0)
+params.addParamValue('channel',[],@(x) isnumeric(x) && isscalar(x))
 params.addParamValue('suppressInvertSample2ara',false,@(x) islogical(x) || x==1 || x==0)
 
 toolboxPath = fileparts(which(mfilename));
@@ -82,6 +90,7 @@ params.parse(varargin{:});
 downsampleDir = aratools.getDownSampledDir;
 ara2sample = params.Results.ara2sample;
 sample2ara = params.Results.sample2ara;
+channel = params.Results.channel;
 suppressInvertSample2ara = params.Results.suppressInvertSample2ara;
 elastixParams = params.Results.elastixParams;
 
@@ -116,7 +125,26 @@ end
 if iscell(dsFile)
     if length(dsFile) == 1
         dsFile = dsFile{1};
+    elseif ~isempty(channel)
+        % Find the selected channel in the list of file names
+        tok=cellfun(@(x) regexp(x,'.*_\d+_\d+_(\d+)\..+','tokens'),dsFile);
+        matchChans = cellfun(@(x) strcmp(x,sprintf('%02d',channel)),[tok{:}]);
+        if ~any(matchChans)
+            % Requested channel not found
+            fprintf('Requested channel %d does not exist. Available files:\n',channel);
+            cellfun(@(x) fprintf('%s\n',x), dsFile)
+            return
+        end
+        if sum(matchChans)>1
+            % Multiple channels found
+            fprintf('Multiple channels match requested channel number %d. Available files:\n',channel);
+            cellfun(@(x) fprintf('%s\n',x), dsFile)
+            return
+        end
+        dsFile = dsFile{find(matchChans)};
+
     else
+
         %Display choices to screen and allow user to choose which volume to register
         fprintf('\n Which volume do you want to use for registration?\n')
         for ii=1:length(dsFile)
@@ -135,11 +163,12 @@ if iscell(dsFile)
         end
 
         dsFile = dsFile{OUT};
-        fprintf('\nRunning registration on volume %s\n\n',dsFile)
 
     end
 
 end
+
+fprintf('\nRunning registration on volume %s\n\n',dsFile)
 
 templateFile = getARAfnames;
 if isempty(templateFile)
