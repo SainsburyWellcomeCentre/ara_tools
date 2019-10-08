@@ -232,6 +232,7 @@ if sample2ara
     else
         fprintf('Conducting registration in %s\n',elastixDir)
         [~,params]=elastix(sampleVol,templateVol,elastixDir,elastixParams);
+        logRegInfoToFile(logFname,sprintf('Registered volume file: %s\n', sampleFile))
         if ~iscell(params.TransformParameters)
             fprintf('\n\n\t** Transforming the sample to the ARA failed (see above).\n\t** Check Elastix parameters and your sample volumes\n')
             fprintf('\t** Not initiating inverse transform.\n\n')
