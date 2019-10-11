@@ -60,11 +60,18 @@ if isstr(trackCoords)
 end
 
 
-% TODO
 % If the electrode coordinates contains points that are outside of imStack, display a 
 % warning message and quit
-% See: MAX, MIN, 
-
+if(  not( max(trackCoords) > size(imStack) | min(trackCoords) < 0)  )
+    % NB: "An expression is true when its result is nonempty and contains
+    % only nonzero elements (logical or real numeric). 
+    % Otherwise, the expression is false"
+    % Therefore have taken the INVERSE, and will quite the function if ELSE
+else
+    %Do not proceed if imStack is not a numeric 3D matrix
+    fprintf('Input argument "trackCoords" is out of the range of the image\n')
+    return
+end
 
 
 
