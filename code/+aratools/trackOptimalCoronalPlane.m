@@ -10,7 +10,8 @@ function varargout = trackOptimalCoronalPlane(imStack,trackCoords,varargin)
 % so that the track is visible throughout. This function determines the tilt angle
 % based upon electrode track coordinates. It then performs an affine transform on 
 % the image stack and returns the optimal coronal plane. The plane is plotted to 
-% screen if no outputs are requested.
+% screen if no outputs are requested.  This plane is a sum of a number of
+% slices acround the optimal slice.
 %
 %
 % Inputs (required)
@@ -23,7 +24,8 @@ function varargout = trackOptimalCoronalPlane(imStack,trackCoords,varargin)
 % Inputs (optional)
 % These are supplied as parameter value pairs
 % 'planesToAverage - 1 by default. If >1 the function averages this many planes
-%                    either side when producing the average image.
+%                    either side when producing the average image.  The
+%                    algorithm already pads with +/-10 slices by default.
 %
 %
 % Outputs
@@ -86,13 +88,18 @@ planesToAverage = params.Results.planesToAverage;
 
 
 
-
-
-% TODO
 % Fit a line (REGRESS) to the electrode track along the sagittal plane. 
 % From this obtain the slope of the track along this axis
 
-tiltAngleInDegrees=0; % TODO: place-holder
+% saggital plane is in the X axis), so want to COLLAPSE this dimension, and
+% regress with the Y and Z coords
+fit = polyfit( trackCoords(:,1), trackCoords(:,3), 1);
+
+
+% the angle can be computed with tan(a) = opp./base
+% BUT the Gradient current expresses (base/opp), so take inverse:
+tiltAngleInRads =  atan( ( 1/fit(1) ) );
+tiltAngleInDegrees = rad2deg( tiltAngleInRads );
 
 
 %Report to screen the electrode tilt in degrees
@@ -101,8 +108,10 @@ fprintf('Electrode tilt rostro-caudally by %0.2f degrees\n', tiltAngleInDegrees)
 
 % Crop the stack so it includes only the range of z-planes encompassed by the 
 % track plus a small buffer.
-firstPlane = min(trackCoords(:,1))-planesToAverage;
-lastPlane  = max(trackCoords(:,1))+planesToAverage;
+% using 10 as a default buffer, to ensure the central slice will include a
+% complete brain section
+firstPlane = min(round(trackCoords(:,1)))-(planesToAverage+10);
+lastPlane  = max(round(trackCoords(:,1)))+(planesToAverage+10);
 if firstPlane<1
     firstPlane=1; 
 end
@@ -113,19 +122,39 @@ imStack = imStack(:,:,firstPlane:lastPlane);
 
 
 
-
-%TODO 
 %Rotate the cropped stack along the rostro-caudal axis using a 3D affine transform
 %See: AFFINE3D, IMWARP, 
 % rot argument in: https://github.com/SainsburyWellcomeCentre/BakingTray/blob/master/code/BTresources/affineMatGen.m
 % The form of the matrix for rotating in 3D is defined on the last page of this PDF:
 % https://people.cs.clemson.edu/~dhouse/courses/401/notes/affines-matrices.pdf
 
-transformedStack=imStack; %TODO: place-holder
+
+rotMat = eye(4);
+if tiltAngleInRads~=0
+    rAngC = cos(tiltAngleInRads*-1); % invert sign for correct transform!
+    rAngS = sin(tiltAngleInRads*-1);
+
+    rotMat(2,2)=rAngC;
+    rotMat(3,3)=rAngC;
+    rotMat(2,3)=rAngS;
+    rotMat(3,2)=rAngS*-1;
+end
+
+% will use the imwarp() function to conduct the transformation
+% therefore, need the transformation matrix as an affine3d object:
+rotMat = affine3d(rotMat);
+
+% perform the matrix multiplication - here using imwarp(), which converts the
+% image to Homogenous Coordinates, applies the transform matrix, and
+% converts back to the 3d image:
+transformedStack = imwarp(imStack, rotMat);
+
+
 
 % The middle plane should be the optimal plane:
-ind = round(size(transformedStack,3));  % Qs; odd vs even number of planes? Does it matter?
-optimalPlane = transformedStack(:,:,ind);
+ind = round(size(transformedStack,3)/2)-1;  % -1 as the optimal plane tends to move forward, as the electrode only goes into first 2/3s of image depth...
+optimalPlane = transformedStack(:,:,ind-2:ind+2); % taking central slice and 2 either side
+optimalPlane = max(optimalPlane,[],3); % forming projection of these slices
 
 
 % Plot image only if the user requested no output arguments
