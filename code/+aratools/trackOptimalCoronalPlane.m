@@ -44,7 +44,7 @@ if nargin<2
     return
 end
 
-if ~isnumeric(imStack) || ~ismatrix(imStack) || numel(size(imStack)) ~= 3
+if ~isnumeric(imStack) || numel(size(imStack)) ~= 3
     %Do not proceed if imStack is not a numeric 3D matrix
     fprintf('Input argument "imStack" should be a 3D matrix\n')
     return
@@ -57,19 +57,15 @@ if isstr(trackCoords)
         return
     end
     % Read file
-    trackCoords = csvread(trackCoords); 
+    trackCoords = csvread(trackCoords);
 end
 
 
 % If the electrode coordinates contains points that are outside of imStack, display a 
 % warning message and quit
-if(  not( max(trackCoords) > size(imStack) | min(trackCoords) < 0)  )
+if any(fliplr(max(trackCoords)) > size(imStack)) || any(min(trackCoords) < 0)
     % NB: "An expression is true when its result is nonempty and contains
     % only nonzero elements (logical or real numeric). 
-    % Otherwise, the expression is false"
-    % Therefore have taken the INVERSE, and will quite the function if ELSE
-else
-    %Do not proceed if imStack is not a numeric 3D matrix
     fprintf('Input argument "trackCoords" is out of the range of the image\n')
     return
 end
@@ -77,12 +73,11 @@ end
 
 
 % Parse optional arguments
-params = inputparser;
+params = inputParser;
 params.CaseSensitive = false;
 params.addParameter('planesToAverage', 1, @(x) isnumeric(x) && isscalar(x))
 
 params.parse(varargin{:});
-
 planesToAverage = params.Results.planesToAverage;
 
 
@@ -117,23 +112,19 @@ end
 imStack = imStack(:,:,firstPlane:lastPlane);
 
 
-
 %Rotate the cropped stack along the rostro-caudal axis using a 3D affine transform
-%See: AFFINE3D, IMWARP, 
-% rot argument in: https://github.com/SainsburyWellcomeCentre/BakingTray/blob/master/code/BTresources/affineMatGen.m
 % The form of the matrix for rotating in 3D is defined on the last page of this PDF:
 % https://people.cs.clemson.edu/~dhouse/courses/401/notes/affines-matrices.pdf
 
-
 rotMat = eye(4);
 if tiltAngleInRads~=0
-    rAngC = cos(tiltAngleInRads*-1); % invert sign for correct transform!
-    rAngS = sin(tiltAngleInRads*-1);
+    rAngC = cos(tiltAngleInRads * -1); % invert sign for correct transform!
+    rAngS = sin(tiltAngleInRads * -1);
 
-    rotMat(2,2)=rAngC;
-    rotMat(3,3)=rAngC;
-    rotMat(2,3)=rAngS;
-    rotMat(3,2)=rAngS*-1;
+    rotMat(2,2) = rAngC;
+    rotMat(3,3) = rAngC;
+    rotMat(2,3) = rAngS;
+    rotMat(3,2) = rAngS * -1;
 end
 
 % will use the imwarp() function to conduct the transformation
@@ -153,6 +144,8 @@ ind = round(size(transformedStack,3)/2)-1;
 if planesToAverage>1
     optimalPlane = transformedStack(:,:,ind-planesToAverge:ind+planesToAverage);
     optimalPlane = max(optimalPlane,[],3); %TODO: is max the best idea?
+else
+    optimalPlane = transformedStack(:,:,ind);
 end
 
 
@@ -166,7 +159,7 @@ end
 % Plot
 clf
 imagesc(optimalPlane)
-axes equal 
+axis equal tight
 colormap gray
 
 
