@@ -82,27 +82,27 @@ planesToAverage = params.Results.planesToAverage;
 
 
 
-% saggital plane is in the X axis), so want to COLLAPSE this dimension, and
-% regress with the Y and Z coords
+% Fit the electrode track along the sagittal plane, which means collapsing along dimension 2
 trackFit = polyfit(trackCoords(:,1), trackCoords(:,3), 1);
-
 
 % The tilt angle of the electrode can be computed with tan(a) = opp/base
 % BUT the gradient currently expresses (base/opp), so take inverse:
 tiltAngleInRads = atan( (1/trackFit(1)) );
 tiltAngleInDegrees = rad2deg(tiltAngleInRads);
 
-
 %Report to screen the electrode tilt in degrees
 fprintf('Electrode tilt rostro-caudally by %0.2f degrees\n', tiltAngleInDegrees)
 
 
+% We are going to crop the stack before rotating it and want to ensure that all
+% planes which contain the electrode track will still look like full sections 
+% after the rotation. Use the tilt angle to pad the stack appropriately.
+padSlices = round(abs(tan(tiltAngleInRads)*max(trackCoords(:,3))));
 % Crop the stack so it includes only the range of z-planes encompassed by the 
 % track plus a small buffer.
-% using 10 as a default buffer, to ensure the central slice will include a
-% complete brain section
-firstPlane = min(round(trackCoords(:,1)))-(planesToAverage+10);
-lastPlane  = max(round(trackCoords(:,1)))+(planesToAverage+10);
+
+firstPlane = min(round(trackCoords(:,1)))-(planesToAverage+padSlices);
+lastPlane  = max(round(trackCoords(:,1)))+(planesToAverage+padSlices);
 if firstPlane<1
     firstPlane=1; 
 end
@@ -164,5 +164,6 @@ colormap gray
 
 
 hold on
+plot(trackCoords(:,2),trackCoords(:,3),'-r')
 % TODO: overlay datapoints corresponding to the track
 hold off
