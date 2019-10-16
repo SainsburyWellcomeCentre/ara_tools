@@ -24,8 +24,7 @@ function varargout = trackOptimalCoronalPlane(imStack,trackCoords,varargin)
 % Inputs (optional)
 % These are supplied as parameter value pairs
 % 'planesToAverage - 1 by default. If >1 the function averages this many planes
-%                    either side when producing the average image. The
-%                    algorithm already pads with +/-10 slices by default.
+%                    either side when producing the average image.
 %
 %
 % Outputs
@@ -149,9 +148,12 @@ transformedStack = imwarp(imStack, rotMat);
 
 
 % The middle plane should be the optimal plane:
-ind = round(size(transformedStack,3)/2)-1;  % -1 as the optimal plane tends to move forward, as the electrode only goes into first 2/3s of image depth...
-optimalPlane = transformedStack(:,:,ind-2:ind+2); % taking central slice and 2 either side
-optimalPlane = max(optimalPlane,[],3); % forming projection of these slices
+% -1 as the optimal plane tends to move forward, as the electrode only goes into first 2/3s of image depth.
+ind = round(size(transformedStack,3)/2)-1;
+if planesToAverage>1
+    optimalPlane = transformedStack(:,:,ind-planesToAverge:ind+planesToAverage);
+    optimalPlane = max(optimalPlane,[],3); %TODO: is max the best idea?
+end
 
 
 % Plot image only if the user requested no output arguments
@@ -169,5 +171,5 @@ colormap gray
 
 
 hold on
-% TODO: over-lay datapoints corresponding to the track
+% TODO: overlay datapoints corresponding to the track
 hold off
