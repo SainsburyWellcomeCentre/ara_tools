@@ -24,7 +24,7 @@ function varargout = trackOptimalCoronalPlane(imStack,trackCoords,varargin)
 % Inputs (optional)
 % These are supplied as parameter value pairs
 % 'planesToAverage - 1 by default. If >1 the function averages this many planes
-%                    either side when producing the average image.  The
+%                    either side when producing the average image. The
 %                    algorithm already pads with +/-10 slices by default.
 %
 %
@@ -32,8 +32,8 @@ function varargout = trackOptimalCoronalPlane(imStack,trackCoords,varargin)
 % coronalPlane - Image of the coronal plane. If this is returned, nothing is 
 %                plotted to screen. 
 %
-% 
-% 
+%
+%
 
 
 
@@ -88,18 +88,15 @@ planesToAverage = params.Results.planesToAverage;
 
 
 
-% Fit a line (REGRESS) to the electrode track along the sagittal plane. 
-% From this obtain the slope of the track along this axis
-
 % saggital plane is in the X axis), so want to COLLAPSE this dimension, and
 % regress with the Y and Z coords
-fit = polyfit( trackCoords(:,1), trackCoords(:,3), 1);
+trackFit = polyfit(trackCoords(:,1), trackCoords(:,3), 1);
 
 
-% the angle can be computed with tan(a) = opp./base
-% BUT the Gradient current expresses (base/opp), so take inverse:
-tiltAngleInRads =  atan( ( 1/fit(1) ) );
-tiltAngleInDegrees = rad2deg( tiltAngleInRads );
+% The tilt angle of the electrode can be computed with tan(a) = opp/base
+% BUT the gradient currently expresses (base/opp), so take inverse:
+tiltAngleInRads = atan( (1/trackFit(1)) );
+tiltAngleInDegrees = rad2deg(tiltAngleInRads);
 
 
 %Report to screen the electrode tilt in degrees
