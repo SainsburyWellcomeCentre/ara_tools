@@ -103,6 +103,7 @@ padSlices = round(abs(tan(tiltAngleInRads)*max(trackCoords(:,3))));
 
 firstPlane = min(round(trackCoords(:,1)))-(planesToAverage+padSlices);
 lastPlane  = max(round(trackCoords(:,1)))+(planesToAverage+padSlices);
+
 if firstPlane<1
     firstPlane=1; 
 end
@@ -110,6 +111,25 @@ if lastPlane>size(imStack,3)
     lastPlane=size(imStack,3);
 end
 imStack = imStack(:,:,firstPlane:lastPlane);
+
+% Before rotating the image, place stack into new matrix, with the middle
+% trackCoord in the centre - so that the stack rotates AROUND this line!
+tcSize = size(trackCoords);
+midIndex = round(tcSize(1)/2);
+trackMidCoord = trackCoords(midIndex,3);
+
+imSize = size(imStack);
+
+imMidDiff = imSize(1) - trackMidCoord;
+extraLines = imMidDiff - trackMidCoord;
+
+A = zeros( extraLines, imSize(2), imSize(3) );
+
+imStack = cat(1,A,imStack);
+
+% create new matrix to fit imStack in, with extraLines more lines
+% then paste the image into this matrix, with extraLines ABOVE its position
+
 
 
 %Rotate the cropped stack along the rostro-caudal axis using a 3D affine transform
@@ -135,17 +155,24 @@ rotMat = affine3d(rotMat);
 % image to Homogenous Coordinates, applies the transform matrix, and
 % converts back to the 3d image:
 transformedStack = imwarp(imStack, rotMat);
+%transformedStack = imStack;
+
+% crop stack back to its original size, within 1 pixel:
+transformedStack = transformedStack( round(  ( extraLines/size(imStack,1) ) * size(transformedStack,1)  ):size(transformedStack,1),:,:);
 
 
 
 % The middle plane should be the optimal plane:
 % -1 as the optimal plane tends to move forward, as the electrode only goes into first 2/3s of image depth.
-ind = round(size(transformedStack,3)/2)-1;
+optSlice = round(size(transformedStack,3)/2)-1;
+buffer = 2;
+
 if planesToAverage>1
-    optimalPlane = transformedStack(:,:,ind-planesToAverge:ind+planesToAverage);
+    optimalPlane = transformedStack(:,:,optSlice-buffer-planesToAverge:optSlice-buffer+planesToAverage);
     optimalPlane = max(optimalPlane,[],3); %TODO: is max the best idea?
 else
-    optimalPlane = transformedStack(:,:,ind);
+    optimalPlane = transformedStack(:,:,optSlice-buffer:optSlice+buffer);
+    optimalPlane = max(optimalPlane,[],3);
 end
 
 
