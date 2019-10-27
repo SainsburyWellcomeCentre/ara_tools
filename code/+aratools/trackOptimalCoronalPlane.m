@@ -23,7 +23,7 @@ function varargout = trackOptimalCoronalPlane(imStack,trackCoords,varargin)
 % 
 % Inputs (optional)
 % These are supplied as parameter value pairs
-% 'planesToAverage - 1 by default. If >1 the function averages this many planes
+% 'planesToAverage - 2 by default. If >1 the function averages this many planes
 %                    either side when producing the average image.
 %
 %
@@ -75,7 +75,7 @@ end
 % Parse optional arguments
 params = inputParser;
 params.CaseSensitive = false;
-params.addParameter('planesToAverage', 1, @(x) isnumeric(x) && isscalar(x))
+params.addParameter('planesToAverage', 2, @(x) isnumeric(x) && isscalar(x))
 
 params.parse(varargin{:});
 planesToAverage = params.Results.planesToAverage;
@@ -91,18 +91,23 @@ tiltAngleInRads = atan( (1/trackFit(1)) );
 tiltAngleInDegrees = rad2deg(tiltAngleInRads);
 
 %Report to screen the electrode tilt in degrees
-fprintf('Electrode tilt rostro-caudally by %0.2f degrees\n', tiltAngleInDegrees)
+
 
 
 % We are going to crop the stack before rotating it and want to ensure that all
 % planes which contain the electrode track will still look like full sections 
 % after the rotation. Use the tilt angle to pad the stack appropriately.
-padSlices = round(abs(tan(tiltAngleInRads)*max(trackCoords(:,3))));
+padSlices = round(round(abs(tan(tiltAngleInRads)*size(imStack,1)))/2);
+fprintf('Electrode tilt rostro-caudally by %0.2f degrees so padding stack by %d slices either side of track.\n', ...
+    tiltAngleInDegrees, padSlices)
+
+% TODO: the following may not be quite right
 % Crop the stack so it includes only the range of z-planes encompassed by the 
 % track plus a small buffer.
+firstPlane = median(round(trackCoords(:,1)))-(planesToAverage+padSlices);
+lastPlane  = median(round(trackCoords(:,1)))+(planesToAverage+padSlices);
 
-firstPlane = min(round(trackCoords(:,1)))-(planesToAverage+padSlices);
-lastPlane  = max(round(trackCoords(:,1)))+(planesToAverage+padSlices);
+
 if firstPlane<1
     firstPlane=1; 
 end
@@ -110,6 +115,24 @@ if lastPlane>size(imStack,3)
     lastPlane=size(imStack,3);
 end
 imStack = imStack(:,:,firstPlane:lastPlane);
+
+% Shift the electrode track coordinates by the same amount
+if firstPlane>1
+    trackCoords(:,1) = trackCoords(:,1)-firstPlane;
+end
+
+%We need to pad the rostral or caudal surface or it will be cropped out after
+%the transform has taken place.
+diagIm = sqrt((size(imStack,1)/2)^2 + (size(imStack,2)/2)^2);
+padRowsBy = round( diagIm - size(imStack,1)/2);
+if tiltAngleInDegrees<0
+    % pad top side
+    imStack = padarray(imStack,[padRowsBy,0,0],'pre');
+    trackCoords(:,3)=trackCoords(:,3)+padRowsBy;
+else
+    % pad bottom side
+    imStack = padarray(imStack,[padRowsBy,0,0],'post');
+end
 
 
 %Rotate the cropped stack along the rostro-caudal axis using a 3D affine transform
@@ -121,49 +144,106 @@ if tiltAngleInRads~=0
     rAngC = cos(tiltAngleInRads * -1); % invert sign for correct transform!
     rAngS = sin(tiltAngleInRads * -1);
 
+    % for rotation
     rotMat(2,2) = rAngC;
     rotMat(3,3) = rAngC;
     rotMat(2,3) = rAngS;
     rotMat(3,2) = rAngS * -1;
+
 end
 
-% will use the imwarp() function to conduct the transformation
-% therefore, need the transformation matrix as an affine3d object:
-rotMat = affine3d(rotMat);
 
-% perform the matrix multiplication - here using imwarp(), which converts the
-% image to Homogenous Coordinates, applies the transform matrix, and
-% converts back to the 3d image:
-transformedStack = imwarp(imStack, rotMat);
+% Transform the stack
+affObj = affine3d(rotMat);
+IR=imref3d(size(imStack));
+%IR.YWorldLimits=[-100,360] ;
+transformedStack = imwarp(imStack, affObj, 'OutputView',IR);
 
 
 
+% Re-order columns then transform points to get the middle z-plane of the track.
 % The middle plane should be the optimal plane:
-% -1 as the optimal plane tends to move forward, as the electrode only goes into first 2/3s of image depth.
-ind = round(size(transformedStack,3)/2)-1;
+tmp = trackCoords(:,[2,3,1]);
+transformedTrack=transformPointsForward(affObj,tmp);
+ind=round(median(transformedTrack(:,3)));
+
+
 if planesToAverage>1
-    optimalPlane = transformedStack(:,:,ind-planesToAverge:ind+planesToAverage);
+    optimalPlane = transformedStack(:,:,ind-planesToAverage:ind+planesToAverage);
     optimalPlane = max(optimalPlane,[],3); %TODO: is max the best idea?
 else
     optimalPlane = transformedStack(:,:,ind);
 end
 
 
+%We can remove the extra image rows now
+if tiltAngleInDegrees<0
+    optimalPlane(end-padRowsBy:end,:)=[];
+    trackCoords(:,3)=trackCoords(:,3)+padRowsBy;
+else
+    % TODO: this is UNTESTED!
+    optimalPlane(1:padRowsB,:)=[];
+    trackCoords(:,2)=trackCoords(:,2)-padRowsBy;
+end
+
+
+
 % Plot image only if the user requested no output arguments
 if nargout>0
     varargout{1}=optimalPlane;
+end
+
+if nargout>1
+    varargout{2}=transformedStack;
+end
+
+if nargout>2
+    varargout{3}=imStack;
+end
+
+if nargout>0
     return
 end
 
 
-% Plot
+% If no inputs were requested, we plot
+
 clf
+% If it's a large image, then it's not been downsampled and we will median filter it
+if size(optimalPlane,1)>1000
+    optimalPlane = medfilt2(optimalPlane,[3,3]);
+end
 imagesc(optimalPlane)
-axis equal tight
+
+axis equal tight ij
 colormap gray
-
-
+caxis([0,3000])
 hold on
-plot(trackCoords(:,2),trackCoords(:,3),'-r')
-% TODO: overlay datapoints corresponding to the track
+
+
+cropBrain=true;
+if cropBrain
+    % Crop out only the brain based on an image segmentation
+    edges=[optimalPlane(:,1:3),optimalPlane(:,end-3:end)];
+    edges = edges(:);
+    edges(edges<1)=[];
+    BW = imbinarize(optimalPlane, mean(edges) + std(edges)*3 );
+
+    ST = strel('disk',round(size(imStack,1)/100));
+    BW = imerode(BW,ST);
+    ST = strel('disk',round(size(imStack,1)/80));
+    BW = imdilate(BW,ST);
+
+    ax1=find(sum(BW,2));
+    ax2=find(sum(BW,1));
+
+    optimalPlane = optimalPlane(ax1(1):ax1(end), ax2(1):ax2(end));
+    ylim([ax1(1),ax1(end)])
+    xlim([ax2(1),ax2(end)])
+
+end
+
+% Overlay data points
+plot(transformedTrack(:,1),transformedTrack(:,2),'-r','linewidth',2)
+
 hold off
