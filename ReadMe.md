@@ -47,7 +47,7 @@ See the [Wiki](https://github.com/BaselLaserMouse/ara_tools/wiki) for documentat
 ### Related projects
 
 * [ClearMap](https://github.com/ChristophKirst/ClearMap)
-* [aMAP](https://github.com/SainsburyWellcomeCentre/aMAP/wiki)
+* [amap](https://github.com/SainsburyWellcomeCentre/amap-python)
 
 
 ### Further info
