@@ -31,7 +31,7 @@ end
 if iscell(dsFile) && length(dsFile)>1
     dsFile=dsFile{1};
 end
-tok=regexp(dsFile,'.*_([012345]\d)_([012345]\d)_0\d','tokens');
+tok=regexp(dsFile,'.*_([012345]\d)_([012345]\d)_ch0\d','tokens');
 if isempty(tok)
     fprintf('%s - Can not find voxel size from file name %s\n', mfilename, dsFile), return
 end

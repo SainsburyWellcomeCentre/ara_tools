@@ -105,7 +105,7 @@ medFiltSample = params.Results.medFiltSample;
 
 
 if ~exist(downsampleDir,'dir')
-    fprintf('Failed to find downsampled directory %s\n', downsampleDir), return
+    fprintf('%s failed to find downsampled directory "%s"\n', mfilename, downsampleDir), return
 end
 
 if sample2ara && suppressInvertSample2ara
