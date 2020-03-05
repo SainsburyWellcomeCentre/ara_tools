@@ -45,7 +45,9 @@ if strcmp(expDir,S.downSampledDir)
 end
 
 
-downsampleDir=dir(fullfile(expDir,[S.downSampledDir,'*']));
+downsampleDir.name = fullfile(S.downSampledDir, sprintf('%03d_micron',S.ARAsize));
+downsampleDir.folder = expDir;
+
 
 if length(downsampleDir)==0
     fprintf('%s - Can not find directory "%s" in sample directory %s\n', mfilename, downsampleDir,pwd)

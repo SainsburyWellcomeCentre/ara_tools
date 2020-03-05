@@ -39,6 +39,11 @@ function ARAregister(varargin)
 %             channelToRegister should be an integer that corresponds channel IDs embdedded 
 %             in downsampled file names. For example: dsXYZ001_25_25_02.tiff is channel 2.
 %             NOTE: this input is ignored if only one downsampled file is present. 
+% 'medFiltSample' - False by default. If true, the sample image is filtered with a 3D median
+%             filter of width 7 before registration. If medFiltSample is an integer greater 
+%             than 1, then the sample image is filtered by this amount instead. 
+%             NOTE: The *unfiltered* result image will appear in the registration directory 
+%             as "result.tiff".
 %
 %
 % Outputs
@@ -59,6 +64,8 @@ function ARAregister(varargin)
 % - Run on channel 4
 % >> ARAregister('channel',4)
 %
+% - Run registration with a filtered sample stack (this may improve the registration significantly)
+% >> ARAregister('medFiltSample',true)
 %
 % Rob Campbell - Basel, 2015
 %
@@ -78,6 +85,7 @@ params.addParamValue('ara2sample',true,@(x) islogical(x) || x==1 || x==0)
 params.addParamValue('sample2ara',true,@(x) islogical(x) || x==1 || x==0)
 params.addParamValue('channel',[],@(x) isnumeric(x) && isscalar(x))
 params.addParamValue('suppressInvertSample2ara',false,@(x) islogical(x) || x==1 || x==0)
+params.addParamValue('medFiltSample',false, @(x) islogical(x) || (isint(x) && x>=0))
 
 toolboxPath = fileparts(which(mfilename));
 toolboxPath = fileparts(fileparts(toolboxPath));
@@ -93,17 +101,31 @@ sample2ara = params.Results.sample2ara;
 channel = params.Results.channel;
 suppressInvertSample2ara = params.Results.suppressInvertSample2ara;
 elastixParams = params.Results.elastixParams;
-
+medFiltSample = params.Results.medFiltSample;
 
 
 if ~exist(downsampleDir,'dir')
-    fprintf('Failed to find downsampled directory %s\n', downsampleDir), return
+    fprintf('%s failed to find downsampled directory "%s"\n', mfilename, downsampleDir), return
 end
 
 if sample2ara && suppressInvertSample2ara
     invertSample2ara = false;
 else
     invertSample2ara = true ;
+end
+
+% Set median filter width to a default value if the user set this input argument to true
+if medFiltSample==true
+    medFiltSize=7;
+end
+
+% Handle scenario where the user supplied a width to filter by
+if medFiltSample>1
+    medFiltSize = medFiltSample;
+    medFiltSample = true;
+    if mod(medFiltSample,2)==0
+        medFiltSize=medFiltSize+1;
+    end
 end
 
 %Check that the elastixParams are there
@@ -192,6 +214,15 @@ switch ext
     case '.tif'
         sampleVol = aratools.loadTiffStack(sampleFile);
 end
+
+
+% If median filtering was requested, filter the sample image using a filter
+% of the desired width.
+if medFiltSample
+    origVol = sampleVol;
+    sampleVol = medfilt3(sampleVol, repmat(medFiltSize,1,3));
+end
+
 fprintf('\n')
 
 
@@ -212,7 +243,13 @@ if ara2sample
         [~,params]=elastix(templateVol,sampleVol,elastixDir,elastixParams);
         if ~iscell(params.TransformParameters)
             fprintf('\n\n\t** Transforming the ARA to the sample failed (see above).\n\t** Check Elastix parameters and your sample volumes\n\n')
+        else
+            if medFiltSample
+                RES = transformix(origVol,elastixDir);
+                save3Dtiff(RES,fullfile(elastixDir,'result.tiff'));
+            end
         end
+
         %optionally remove files used to conduct registration 
         if S.removeMovingAndFixed
             delete(fullfile(elastixDir,[S.ara2sampleDir,'_moving*']))
@@ -231,11 +268,18 @@ if sample2ara
         fprintf('Failed to make directory %s\n',elastixDir)
     else
         fprintf('Conducting registration in %s\n',elastixDir)
-        [~,params]=elastix(sampleVol,templateVol,elastixDir,elastixParams);
+        [~,params]=elastix(sampleVol,templateVol,elastixDir,elastixParams); 
+        logFname = fullfile(elastixDir,'ARA_reg_log.txt');
+        logRegInfoToFile(logFname,sprintf('Registered volume file: %s\n', sampleFile))
         if ~iscell(params.TransformParameters)
             fprintf('\n\n\t** Transforming the sample to the ARA failed (see above).\n\t** Check Elastix parameters and your sample volumes\n')
             fprintf('\t** Not initiating inverse transform.\n\n')
             return
+        else
+            if medFiltSample
+                RES = transformix(origVol,elastixDir);
+                save3Dtiff(RES,fullfile(elastixDir,'result.tiff'));
+            end            
         end
     end
 
