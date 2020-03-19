@@ -1,11 +1,12 @@
 volFormat: tiff
 downSampledDir: downsampled_stacks
+regDir: registration
 extractedDataDir: sparsedata
-ARAsize: 25,
-araDir: ~/tvoucan/Mrsic-Flogel/ReferenceAtlas/ARA_CCFv3/
+ARAsize: 25
+araDir: ~/ReferenceAtlas/ARA_CCFv3/
 araSubDirFormat: ARA_%s_micron_mhd
-ara2sampleDir: ARA2sample
-sample2araDir: sample2ARA
+ara2sampleDir: ARA_to_sample
+sample2araDir: sample_to_ARA
 invertedMatName: inverted.mat
 sparseDataMatLogFname: exportedDataLog.mat
 removeMovingAndFixed: 1

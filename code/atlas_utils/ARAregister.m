@@ -27,7 +27,8 @@ function ARAregister(varargin)
 %
 % Inputs (optional parameter/value pairs)
 % 'downsampleDir' - String defining the directory that contains the downsampled data. 
-%                   By default uses value from toolbox YML file (see source code for now).
+%                   By default uses value derived from the toolbox YML file using 
+%                   the function aratools.getDownSampledDir.
 % 'ara2sample' - [bool, default true] whether to register the ARA to the sample
 % 'sample2ara' - [bool, default true] whether to register the sample to the ARA
 % 'suppressInvertSample2ara' - [bool. default false] if true, the inverse transform is not
@@ -71,7 +72,11 @@ function ARAregister(varargin)
 %
 % Also see from this repository:
 % invertExportedSparseFiles (and transformSparsePoints), aratools.rescaleAllSparsePoints
-
+%
+% Changes
+% 2020/03/18 - Modifies the parameters automaticaly for the correct voxel size. It does this
+%              by loading them into a structure, altering this, then feeding this into the 
+%              elastix function.
 
 
 %Parse input arguments
@@ -80,12 +85,12 @@ S=settings_handler('settingsFiles_ARAtools.yml');
 params = inputParser;
 params.CaseSensitive=false;
 
-params.addParamValue('downsampleDir',fullfile(pwd,S.downSampledDir),@ischar)
-params.addParamValue('ara2sample',true,@(x) islogical(x) || x==1 || x==0)
-params.addParamValue('sample2ara',true,@(x) islogical(x) || x==1 || x==0)
-params.addParamValue('channel',[],@(x) isnumeric(x) && isscalar(x))
-params.addParamValue('suppressInvertSample2ara',false,@(x) islogical(x) || x==1 || x==0)
-params.addParamValue('medFiltSample',false, @(x) islogical(x) || (isint(x) && x>=0))
+params.addParamValue('downsampleDir', aratools.getDownSampledDir,@ischar)
+params.addParamValue('ara2sample', true, @(x) islogical(x) || x==1 || x==0)
+params.addParamValue('sample2ara', true, @(x) islogical(x) || x==1 || x==0)
+params.addParamValue('channel', [], @(x) isnumeric(x) && isscalar(x))
+params.addParamValue('suppressInvertSample2ara', false, @(x) islogical(x) || x==1 || x==0)
+params.addParamValue('medFiltSample', false, @(x) islogical(x) || (isint(x) && x>=0))
 
 toolboxPath = fileparts(which(mfilename));
 toolboxPath = fileparts(fileparts(toolboxPath));
@@ -95,7 +100,7 @@ params.addParamValue('elastixParams',elastix_params_default,@iscell)
 
 
 params.parse(varargin{:});
-downsampleDir = aratools.getDownSampledDir;
+downsampleDir = params.Results.downsampleDir;
 ara2sample = params.Results.ara2sample;
 sample2ara = params.Results.sample2ara;
 channel = params.Results.channel;
@@ -107,6 +112,12 @@ medFiltSample = params.Results.medFiltSample;
 if ~exist(downsampleDir,'dir')
     fprintf('%s failed to find downsampled directory "%s"\n', mfilename, downsampleDir), return
 end
+
+
+% Make the registration directory if needed
+aratools.makeRegDir
+
+
 
 if sample2ara && suppressInvertSample2ara
     invertSample2ara = false;
@@ -128,6 +139,7 @@ if medFiltSample>1
     end
 end
 
+
 %Check that the elastixParams are there
 for ii=1:length(elastixParams)
     if ~exist(elastixParams{ii},'file')
@@ -135,7 +147,14 @@ for ii=1:length(elastixParams)
     end
 end
 
-
+% We will now load the parameters into a cell array of structures and then modify it
+% so that the correct pixel size is used. 
+for ii=1:length(elastixParams)
+    elastixParams{ii}=elastix_parameter_read(elastixParams{ii});
+    if isfield(elastixParams{ii},'FinalGridSpacingInVoxels')
+        elastixParams{ii}.FinalGridSpacingInVoxels(:) = S.ARAsize;
+    end
+end
 
 %Figure out which atlas to use
 dsFile = aratools.getDownSampledFile;
@@ -192,6 +211,7 @@ end
 
 fprintf('\nRunning registration on volume %s\n\n',dsFile)
 
+
 templateFile = getARAfnames;
 if isempty(templateFile)
     return  %warning message already issued
@@ -223,15 +243,13 @@ if medFiltSample
     sampleVol = medfilt3(sampleVol, repmat(medFiltSize,1,3));
 end
 
-fprintf('\n')
-
 
 %We should now be able to proceed with the registration. 
 if ara2sample
 
     fprintf('Beginning registration of ARA to sample\n')
     %make the directory in which we will conduct the registration
-    elastixDir = fullfile(downsampleDir,S.ara2sampleDir);
+    elastixDir = fullfile(S.regDir,S.ara2sampleDir);
     if ~mkdir(elastixDir)
         fprintf('Failed to make directory %s\n',elastixDir)
     else
@@ -240,7 +258,7 @@ if ara2sample
         % Info on what was registered is logged here
         logFname = fullfile(elastixDir,'ARA_reg_log.txt');
         logRegInfoToFile(logFname,sprintf('Registered volume file: %s\n', sampleFile))
-        [~,params]=elastix(templateVol,sampleVol,elastixDir,elastixParams);
+        [~,params]  = elastix(templateVol,sampleVol,elastixDir,-1,'paramstruct',elastixParams);
         if ~iscell(params.TransformParameters)
             fprintf('\n\n\t** Transforming the ARA to the sample failed (see above).\n\t** Check Elastix parameters and your sample volumes\n\n')
         else
@@ -263,12 +281,12 @@ if sample2ara
     fprintf('Beginning registration of sample to ARA\n')
 
     %make the directory in which we will conduct the registration
-    elastixDir = fullfile(downsampleDir,S.sample2araDir);
+    elastixDir = fullfile(S.regDir,S.sample2araDir);
     if ~mkdir(elastixDir)
         fprintf('Failed to make directory %s\n',elastixDir)
     else
         fprintf('Conducting registration in %s\n',elastixDir)
-        [~,params]=elastix(sampleVol,templateVol,elastixDir,elastixParams); 
+        [~,params]=elastix(sampleVol,templateVol,elastixDir,-1,'paramstruct',elastixParams); 
         logFname = fullfile(elastixDir,'ARA_reg_log.txt');
         logRegInfoToFile(logFname,sprintf('Registered volume file: %s\n', sampleFile))
         if ~iscell(params.TransformParameters)

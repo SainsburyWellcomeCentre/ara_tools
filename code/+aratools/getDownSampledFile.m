@@ -1,7 +1,7 @@
 function fname = getDownSampledFile(expDir)
 % ARA helper function. Returns downsampled stack file name when called from experiment root dir
 %
-% function fname = getDownSampledFile(expDir)
+% function fname = aratools.getDownSampledFile(expDir)
 %
 % Purpose
 % Return the downsampled stack file name in the current sample's downsampled data directory.
