@@ -115,7 +115,7 @@ end
 
 
 % Make the registration directory if needed
-aratools.makeRegDir
+regDir = aratools.makeRegDir;
 
 
 
@@ -249,7 +249,7 @@ if ara2sample
 
     fprintf('Beginning registration of ARA to sample\n')
     %make the directory in which we will conduct the registration
-    elastixDir = fullfile(S.regDir,S.ara2sampleDir);
+    elastixDir = fullfile(regDir,S.ara2sampleDir);
     if ~mkdir(elastixDir)
         fprintf('Failed to make directory %s\n',elastixDir)
     else
@@ -281,7 +281,7 @@ if sample2ara
     fprintf('Beginning registration of sample to ARA\n')
 
     %make the directory in which we will conduct the registration
-    elastixDir = fullfile(S.regDir,S.sample2araDir);
+    elastixDir = fullfile(regDir,S.sample2araDir);
     if ~mkdir(elastixDir)
         fprintf('Failed to make directory %s\n',elastixDir)
     else

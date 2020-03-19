@@ -1,20 +1,24 @@
-function makeRegDir
+function varargout = makeRegDir
 % ARA helper function. Makes directories for registration within the current directory
 %
-% function aratools.makeRegDir
+% function pathToRegDir = aratools.makeRegDir
 %
 % Purpose
-% Return all downsampled directory names in the current sample's 
-% downsampled directory. If an input argument is provided, look in this 
-% relative or absolute path for the sample directory. This could be either 
-% an MHD file or a TIFF. The purpose of this function is that it can be
-% extended in the future to cope with multiple downsampled directories
-% in the same sample directory. 
+% Make a directory into which we will register data. Return the path as a string.
+% Makes directories in the form:
 %
-% 
-% Inputs
-% expDir - [optional] relative or absolute path to sample directory
-%          if expDir is missing, look in the current directory. 
+% registration/reg_01__2020_03_19_a
+% registration/reg_02__2020_03_19_b
+% registration/reg_03__2020_03_20_a
+% etc..
+%
+% Within each the following will be created by ARAregister:
+% registration/reg_01__2020_03_19_a/ARA_to_sample
+% registration/reg_01__2020_03_19_a/sample_to_ARA
+%
+%
+% Outputs [optional]
+% pathToRegDir - absolute path to registration directory
 %
 %
 % Examples
@@ -40,11 +44,45 @@ if ~exist(regDir,'dir')
     mkdir(regDir)
 end
 
-dirsToMake = {S.ara2sampleDir, S.sample2araDir};
+% Now we automatically generate a directory name into which we will do the registration
+contents = dir(regDir);
+subDirNames = {contents.name};
+subDirNames = subDirNames([contents.isdir]);
 
-for ii=1:length(dirsToMake)
-    tmp = fullfile(regDir,dirsToMake{ii});
-    if ~exist(tmp)
-        mkdir(tmp)
+
+% Keep only registration directories
+for ii=length(subDirNames):-1:1
+    % Check whether this is a registration sub-directory
+    if isempty(regexp(subDirNames{ii},'reg_\d{2}__\d{4}_\d{2}_\d{2}_\w'))
+        subDirNames(ii)=[];
     end
+end
+
+
+% Make the registration sub-directory
+if isempty(subDirNames)
+    % If there are no registration sub-directories then we make one.
+    regDirToMake = ['reg_01__',datestr(now,'yyyy_mm_dd'),'_a'];
+else
+    % Otherwise registrations already exist. We make a new directory that
+    % increments the previous one:
+    finalIndex = ['a':'z','A':'Z'];
+    lastDirName = subDirNames{end};
+    regIndex=regexp(lastDirName,'^reg_(\d{2})__','tokens');
+    dayIndex=regexp(lastDirName,'.*_(\w)$','tokens');
+    f=find(finalIndex==dayIndex{1}{1});
+
+    regDirToMake = sprintf('reg_%02d__%s_%s', ...
+        str2num(regIndex{1}{1})+1, ...
+        datestr(now,'yyyy_mm_dd'), ...
+        finalIndex(f+1));
+end
+
+
+regDir = fullfile(regDir,regDirToMake);
+mkdir(regDir)
+
+
+if nargout>0
+    varargout{1}=regDir;
 end
