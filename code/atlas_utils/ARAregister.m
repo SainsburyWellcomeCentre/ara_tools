@@ -154,10 +154,9 @@ else
     fprintf('1. DELETE existing registrations and replace all with a NEW one.\n')
     fprintf('2. KEEP existing registrations but ADD a new one.\n')
     fprintf('3. TIDY by DELETING all registrations apart from a named one.\n')
-
+    return
 end
 
-return
 
 if sample2ara && suppressInvertSample2ara
     invertSample2ara = false;
