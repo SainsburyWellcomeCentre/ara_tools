@@ -7,8 +7,7 @@ function ARAregister(varargin)
 % Register sample brain to the ARA (Allen Reference Atlas) in various ways. 
 % This function assumes you have a directory containing your brain in the same
 % voxel size as the ARA. You can generate this for instance, by running the
-% downsampleAllChannels command from stitchit. This will produce a directory
-% called downsampledStacks_25. 
+% downsampleAllChannels command from stitchit.
 %
 % By default this function:
 % 1. Registers the ARA template TO the sample.
@@ -38,7 +37,7 @@ function ARAregister(varargin)
 % 'elastixParams' - paths to parameter files. By default we use those in ARA_tools/elastix_params/
 % 'channel' - If missing an interactive selector at the command line appears. If present,
 %             channelToRegister should be an integer that corresponds channel IDs embdedded 
-%             in downsampled file names. For example: dsXYZ001_25_25_02.tiff is channel 2.
+%             in downsampled file names. For example: dsXYZ001_25_25_ch02.tiff is channel 2.
 %             NOTE: this input is ignored if only one downsampled file is present. 
 % 'medFiltSample' - False by default. If true, the sample image is filtered with a 3D median
 %             filter of width 7 before registration. If medFiltSample is an integer greater 
@@ -282,6 +281,22 @@ if medFiltSample
 end
 
 
+% Log to a file the registration parameters
+logFname = fullfile(regDir,'registration_log.txt');
+logRegInfoToFile(logFname,sprintf('Begun at: %s\n', datestr(now,'yyyy-mm-dd HH:MM:SS')),true)
+logRegInfoToFile(logFname,sprintf('Sample volume file: %s\n', sampleFile))
+logRegInfoToFile(logFname,sprintf('Template file: %s\n', templateFile))
+logRegInfoToFile(logFname,sprintf('Voxel size: %d microns\n', S.ARAsize))
+elastix_version=elastix('version');
+logRegInfoToFile(logFname,sprintf('Registration software: %s\n', elastix_version))
+if ~medFiltSample
+    logRegInfoToFile(logFname,sprintf('Filtering of sample volume: none\n'))
+else
+    logRegInfoToFile(logFname,sprintf('Filtering of sample volume: medfilt3 with filter size %d\n',medFiltSize))
+end
+
+
+
 %We should now be able to proceed with the registration. 
 if ara2sample
 
@@ -293,9 +308,6 @@ if ara2sample
     else
         fprintf('Conducting registration in %s\n',elastixDir)
 
-        % Info on what was registered is logged here
-        logFname = fullfile(elastixDir,'ARA_reg_log.txt');
-        logRegInfoToFile(logFname,sprintf('Registered volume file: %s\n', sampleFile))
         [~,params]  = elastix(templateVol,sampleVol,elastixDir,-1,'paramstruct',elastixParams);
         if ~iscell(params.TransformParameters)
             fprintf('\n\n\t** Transforming the ARA to the sample failed (see above).\n\t** Check Elastix parameters and your sample volumes\n\n')
@@ -312,7 +324,7 @@ if ara2sample
             delete(fullfile(elastixDir,[S.ara2sampleDir,'_target*']))
         end
     end
-
+    copyfile(logFname,elastixDir)
 end
 
 if sample2ara
@@ -325,8 +337,7 @@ if sample2ara
     else
         fprintf('Conducting registration in %s\n',elastixDir)
         [~,params]=elastix(sampleVol,templateVol,elastixDir,-1,'paramstruct',elastixParams); 
-        logFname = fullfile(elastixDir,'ARA_reg_log.txt');
-        logRegInfoToFile(logFname,sprintf('Registered volume file: %s\n', sampleFile))
+
         if ~iscell(params.TransformParameters)
             fprintf('\n\n\t** Transforming the sample to the ARA failed (see above).\n\t** Check Elastix parameters and your sample volumes\n')
             fprintf('\t** Not initiating inverse transform.\n\n')
@@ -338,6 +349,8 @@ if sample2ara
                 save3Dtiff(RES,fullfile(elastixDir,'result.tiff'));
             end
         end
+        % Copy the log file we have already made to this directory
+        copyfile(logFname,elastixDir)
     end
 
 if ~suppressInvertSample2ara
@@ -354,19 +367,36 @@ if ~suppressInvertSample2ara
     end
 end
 
+logRegInfoToFile(logFname,sprintf('Completed at: %s\n', datestr(now,'yyyy-mm-dd HH:MM:SS')))
 fprintf('\nFinished\n')
 
 
 
 
-function logRegInfoToFile(fname,dataToLog)
-    %Write string dataToLog to fname. 
-    %This little function is just to make it easier to log identity of the channel being registered 
+function logRegInfoToFile(fname,dataToLog,flush)
+    %Write string dataToLog to fname.
+    %This little function is just to make it easier to log identity of the channel being registered
+    %
+    % fname - file to which we will log stuff
+    % dataToLog - text to write
+    % flush - optional. False by default. If true, we wipe file "fname" and start over.
+    %         i.e. if flush is false we append.
 
-    fid = fopen(fname,'w+');
+    if nargin<3
+        flush=false;
+    end
+
+    if flush
+        fid = fopen(fname,'w+');
+    else
+        fid = fopen(fname,'a+');
+    end
+
     if fid<0
         fprintf('FAILED TO WRITE LOG DATA TO FILE %s\n',fname)
         return
     end
+
     fprintf(fid,dataToLog);
+
     fclose(fid);
