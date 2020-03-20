@@ -18,22 +18,13 @@ function varargout = makeRegDir
 %
 %
 % Outputs [optional]
-% pathToRegDir - absolute path to registration directory
+% pathToRegDir - absolute path to the just-made registration directory
+% existingRegDirs - cell array of absolute paths to all existing registration directories
 %
 %
-% Examples
-% 1. 
-% >> cd XY123_121212
-% >> getDownSampledDir
-% ans =
-%   dsXY123_25_25_02.mhd
+% Rob Campbell - SWC 2020
 %
-% 2. 
-% >> getDownSampledMHDFile('XY123_121212')
-%
-%
-% Rob Campbell - SWC 2019
-
+% See also: aratools.findRegDirs
 
 
 S=settings_handler('settingsFiles_ARAtools.yml');
@@ -44,20 +35,7 @@ if ~exist(regDir,'dir')
     mkdir(regDir)
 end
 
-% Now we automatically generate a directory name into which we will do the registration
-contents = dir(regDir);
-subDirNames = {contents.name};
-subDirNames = subDirNames([contents.isdir]);
-
-
-% Keep only registration directories
-for ii=length(subDirNames):-1:1
-    % Check whether this is a registration sub-directory
-    if isempty(regexp(subDirNames{ii},'reg_\d{2}__\d{4}_\d{2}_\d{2}_\w'))
-        subDirNames(ii)=[];
-    end
-end
-
+subDirNames = aratools.findRegDirs;
 
 % Make the registration sub-directory
 if isempty(subDirNames)
@@ -67,7 +45,7 @@ else
     % Otherwise registrations already exist. We make a new directory that
     % increments the previous one:
     finalIndex = ['a':'z','A':'Z'];
-    lastDirName = subDirNames{end};
+    [~,lastDirName] = fileparts(subDirNames{end});
     regIndex=regexp(lastDirName,'^reg_(\d{2})__','tokens');
     dayIndex=regexp(lastDirName,'.*_(\w)$','tokens');
     f=find(finalIndex==dayIndex{1}{1});
@@ -79,10 +57,16 @@ else
 end
 
 
-regDir = fullfile(regDir,regDirToMake);
-mkdir(regDir)
+mkdir(fullfile(regDir,regDirToMake));
 
 
 if nargout>0
-    varargout{1}=regDir;
+    varargout{1}=fullfile(regDir,regDirToMake);
+end
+
+if nargout>1
+    for ii=1:length(subDirNames)
+        subDirNames{ii} = fullfile(regDir,subDirNames{ii});
+    end
+    varargout{2}=subDirNames;
 end

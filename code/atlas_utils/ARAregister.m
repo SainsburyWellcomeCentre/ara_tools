@@ -45,6 +45,11 @@ function ARAregister(varargin)
 %             than 1, then the sample image is filtered by this amount instead. 
 %             NOTE: The *unfiltered* result image will appear in the registration directory 
 %             as "result.tiff".
+% 'action' - If a registration already has been done, then ARAregister does nothing. This is 
+%            over-ridden by the "action" argument:
+%            'delete' -- deletes existing registrations (WITH NO CONFIRMATION) and replace all with a new one. 
+%            'keep' -- retain existing registrations but add a new one.
+%            'tidy' -- delete all registrations apart from a named one which is chosen at the CLI. Then do nothing.
 %
 %
 % Outputs
@@ -91,6 +96,8 @@ params.addParamValue('sample2ara', true, @(x) islogical(x) || x==1 || x==0)
 params.addParamValue('channel', [], @(x) isnumeric(x) && isscalar(x))
 params.addParamValue('suppressInvertSample2ara', false, @(x) islogical(x) || x==1 || x==0)
 params.addParamValue('medFiltSample', false, @(x) islogical(x) || (isint(x) && x>=0))
+params.addParamValue('action', 'none', @(x) ischar(x) && (strcmpi('none',x) || strcmpi('delete',x) || strcmpi('keep',x) || strcmpi('tidy',x)))
+
 
 toolboxPath = fileparts(which(mfilename));
 toolboxPath = fileparts(fileparts(toolboxPath));
@@ -107,7 +114,7 @@ channel = params.Results.channel;
 suppressInvertSample2ara = params.Results.suppressInvertSample2ara;
 elastixParams = params.Results.elastixParams;
 medFiltSample = params.Results.medFiltSample;
-
+action = lower(params.Results.action);
 
 if ~exist(downsampleDir,'dir')
     fprintf('%s failed to find downsampled directory "%s"\n', mfilename, downsampleDir), return
@@ -115,9 +122,42 @@ end
 
 
 % Make the registration directory if needed
-regDir = aratools.makeRegDir;
+existingRegDir=aratools.findRegDirs;
 
+if isempty(existingRegDir)
+    % If no registration directories exist, we make one
+    regDir = aratools.makeRegDir;
 
+elseif ~isempty(existingRegDir) && strcmp('delete',action)
+    % Delete existing registration directory tree and build a new one
+    if exist(S.regDir,'dir')
+        fprintf('Deleting all existing registrations\n')
+        rmdir(S.regDir,'s')
+    end
+    regDir = aratools.makeRegDir;
+
+elseif ~isempty(existingRegDir) && strcmp('keep',action)
+    % Add a new registration directory
+    regDir = aratools.makeRegDir;
+    fprintf('Registering into new directory %s\n', regDir)
+
+elseif ~isempty(existingRegDir) && strcmp('tidy',action)
+    % Delete all but one registration
+    aratools.tidyRegistrations
+    return
+
+else
+    % Otherwise we ask the user what to do
+    fprintf('\nFound the following existing registration directories:\n')
+    cellfun(@(x) fprintf('%s\n',x), existingRegDir)
+    fprintf('\nDoing nothing!\nIf you wish, you may re-run ARAregister using the ''action'' parameter to do one of the following:\n')
+    fprintf('1. DELETE existing registrations and replace all with a NEW one.\n')
+    fprintf('2. KEEP existing registrations but ADD a new one.\n')
+    fprintf('3. TIDY by DELETING all registrations apart from a named one.\n')
+
+end
+
+return
 
 if sample2ara && suppressInvertSample2ara
     invertSample2ara = false;
@@ -191,18 +231,18 @@ if iscell(dsFile)
             fprintf('%d. %s\n',ii,dsFile{ii})
         end
         qs=sprintf('[1 .. %d]? ', length(dsFile));
-        OUT = [];
-        while isempty(OUT)
-            OUT = input(qs,'s');
-            OUT = str2num(OUT);
-            if ~isempty(OUT) && OUT>=1 && OUT<=length(dsFile)
+        userAnswer = [];
+        while isempty(userAnswer)
+            userAnswer = input(qs,'s');
+            userAnswer = str2num(userAnswer);
+            if ~isempty(userAnswer) && userAnswer>=1 && userAnswer<=length(dsFile)
                 break
             else
-                OUT=[];
+                userAnswer=[];
             end
         end
 
-        dsFile = dsFile{OUT};
+        dsFile = dsFile{userAnswer};
 
     end
 
