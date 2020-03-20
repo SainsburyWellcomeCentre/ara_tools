@@ -162,13 +162,12 @@ if isempty(dsFile)
     return %warning message already issued
 end
 
-
 if iscell(dsFile)
     if length(dsFile) == 1
         dsFile = dsFile{1};
     elseif ~isempty(channel)
         % Find the selected channel in the list of file names
-        tok=cellfun(@(x) regexp(x,'.*_\d+_\d+_(\d+)\..+','tokens'),dsFile);
+        tok=cellfun(@(x) regexp(x,'.*_\d+_\d+_ch(\d+)\..+','tokens'),dsFile,'UniformOutput',false);
         matchChans = cellfun(@(x) strcmp(x,sprintf('%02d',channel)),[tok{:}]);
         if ~any(matchChans)
             % Requested channel not found
