@@ -333,9 +333,10 @@ if sample2ara
             return
         else
             if medFiltSample
+                % Tansform the original dataset so we get a non-filtered image
                 RES = transformix(origVol,elastixDir);
                 save3Dtiff(RES,fullfile(elastixDir,'result.tiff'));
-            end            
+            end
         end
     end
 
