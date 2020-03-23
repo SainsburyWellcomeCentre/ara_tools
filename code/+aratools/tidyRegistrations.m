@@ -3,15 +3,41 @@ function tidyRegistrations
 %
 % function pathToRegDir = aratools.tidyRegistrations
 %
-% Purpose
+% PURPOSE
 % Tidy existing registrations, keeping just one.
 %
 %
-% Inputs
+% INPUTS
 % None
 %
-% Outputs
+% OUTPUTS
 % None
+%
+%
+% EXAMPLE:
+% >> aratools.tidyRegistrations
+%
+% Which registration do you want to keep?
+%
+% * 1. /Volumes/data/XYZ_123/registration/reg_01__2020_03_23_a
+% Date conducted: 2020-03-23_13-57-13
+% Channel #3 (green)
+% Voxel size: 50 microns
+% Filtering of sample volume: medfilt3 with filter size 7
+% Registrations conducted:
+%   ARA to sample
+%   sample to ARA
+%   Inversion of sample to ARA
+%
+% * 2. /Volumes/data/XYZ_123/registration/reg_02__2020_03_23_b
+% Date conducted: 2020-03-23_14-28-31
+% Channel #3 (green)
+% Voxel size: 50 microns
+% Filtering of sample volume: none
+% Registrations conducted:
+%   ARA to sample
+%
+%[1 .. 2]? 
 %
 %
 % Rob Campbell - SWC 2020
@@ -32,10 +58,18 @@ end
 
 
 
-fprintf('Which registration do you want to keep?\n')
+fprintf('\nWhich registration do you want to keep?\n\n')
 
 for ii=1:length(regDirs)
-    fprintf(' * %d. %s\n', ii, regDirs{ii})
+    tRegDir = regDirs{ii};
+    fprintf(' * %d. %s\n', ii, tRegDir)
+
+    regLogFile=fullfile(tRegDir,'registration_log.txt');
+    if exist(regLogFile,'file')
+        aratools.readLogFile(regLogFile,true);
+        fprintf('\n')
+    end
+
 end
 
 
