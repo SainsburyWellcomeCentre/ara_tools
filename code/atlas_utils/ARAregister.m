@@ -283,10 +283,12 @@ end
 
 % Log to a file the registration parameters
 logFname = fullfile(regDir,'registration_log.txt');
-logRegInfoToFile(logFname,sprintf('Begun at: %s\n', datestr(now,'yyyy-mm-dd HH:MM:SS')),true)
+logRegInfoToFile(logFname,sprintf('Analysis carried out: %s\n', datestr(now,'yyyy-mm-dd_HH-MM-SS')),true)
+logRegInfoToFile(logFname,sprintf('Directory: %s\n', regDir))
+logRegInfoToFile(logFname,sprintf('Voxel size: %d microns\n', S.ARAsize))
 logRegInfoToFile(logFname,sprintf('Sample volume file: %s\n', sampleFile))
 logRegInfoToFile(logFname,sprintf('Template file: %s\n', templateFile))
-logRegInfoToFile(logFname,sprintf('Voxel size: %d microns\n', S.ARAsize))
+
 elastix_version=elastix('version');
 logRegInfoToFile(logFname,sprintf('Registration software: %s\n', elastix_version))
 if ~medFiltSample
@@ -297,46 +299,48 @@ end
 
 
 
+
 %We should now be able to proceed with the registration. 
+elastixDir = {};
 if ara2sample
 
     fprintf('Beginning registration of ARA to sample\n')
     %make the directory in which we will conduct the registration
-    elastixDir = fullfile(regDir,S.ara2sampleDir);
-    if ~mkdir(elastixDir)
-        fprintf('Failed to make directory %s\n',elastixDir)
+    elastixDir{end+1} = fullfile(regDir,S.ara2sampleDir);
+    if ~mkdir(elastixDir{end})
+        fprintf('Failed to make directory %s\n',elastixDir{end})
     else
-        fprintf('Conducting registration in %s\n',elastixDir)
+        fprintf('Conducting registration in %s\n',elastixDir{end})
 
-        [~,params]  = elastix(templateVol,sampleVol,elastixDir,-1,'paramstruct',elastixParams);
+        [~,params]  = elastix(templateVol,sampleVol,elastixDir{end},-1,'paramstruct',elastixParams);
         if ~iscell(params.TransformParameters)
             fprintf('\n\n\t** Transforming the ARA to the sample failed (see above).\n\t** Check Elastix parameters and your sample volumes\n\n')
         else
             if medFiltSample
-                RES = transformix(origVol,elastixDir);
-                save3Dtiff(RES,fullfile(elastixDir,'result.tiff'));
+                RES = transformix(origVol,elastixDir{end});
+                save3Dtiff(RES,fullfile(elastixDir{end},'result.tiff'));
             end
         end
 
         %optionally remove files used to conduct registration 
         if S.removeMovingAndFixed
-            delete(fullfile(elastixDir,[S.ara2sampleDir,'_moving*']))
-            delete(fullfile(elastixDir,[S.ara2sampleDir,'_target*']))
+            delete(fullfile(elastixDir{end},[S.ara2sampleDir,'_moving*']))
+            delete(fullfile(elastixDir{end},[S.ara2sampleDir,'_target*']))
         end
     end
-    copyfile(logFname,elastixDir)
+
 end
 
 if sample2ara
     fprintf('Beginning registration of sample to ARA\n')
 
     %make the directory in which we will conduct the registration
-    elastixDir = fullfile(regDir,S.sample2araDir);
-    if ~mkdir(elastixDir)
-        fprintf('Failed to make directory %s\n',elastixDir)
+    elastixDir{end+1} = fullfile(regDir,S.sample2araDir);
+    if ~mkdir(elastixDir{end})
+        fprintf('Failed to make directory %s\n',elastixDir{end})
     else
-        fprintf('Conducting registration in %s\n',elastixDir)
-        [~,params]=elastix(sampleVol,templateVol,elastixDir,-1,'paramstruct',elastixParams); 
+        fprintf('Conducting registration in %s\n',elastixDir{end})
+        [~,params]=elastix(sampleVol,templateVol,elastixDir{end},-1,'paramstruct',elastixParams); 
 
         if ~iscell(params.TransformParameters)
             fprintf('\n\n\t** Transforming the sample to the ARA failed (see above).\n\t** Check Elastix parameters and your sample volumes\n')
@@ -345,29 +349,33 @@ if sample2ara
         else
             if medFiltSample
                 % Tansform the original dataset so we get a non-filtered image
-                RES = transformix(origVol,elastixDir);
-                save3Dtiff(RES,fullfile(elastixDir,'result.tiff'));
+                RES = transformix(origVol,elastixDir{end});
+                save3Dtiff(RES,fullfile(elastixDir{end},'result.tiff'));
             end
         end
         % Copy the log file we have already made to this directory
-        copyfile(logFname,elastixDir)
+
     end
 
 if ~suppressInvertSample2ara
         fprintf('Beginning inversion of sample to ARA\n')
-        inverted=invertElastixTransform(elastixDir);
-        save(fullfile(elastixDir,S.invertedMatName),'inverted')
+        inverted=invertElastixTransform(elastixDir{end});
+        save(fullfile(elastixDir{end},S.invertedMatName),'inverted')
 
         %Now we can transform the sparse points files 
         invertExportedSparseFiles(inverted)
     end
     if S.removeMovingAndFixed
-        delete(fullfile(elastixDir,[S.sample2araDir,'_moving*']))
-        delete(fullfile(elastixDir,[S.sample2araDir,'_target*']))
+        delete(fullfile(elastixDir{end},[S.sample2araDir,'_moving*']))
+        delete(fullfile(elastixDir{end},[S.sample2araDir,'_target*']))
     end
 end
 
-logRegInfoToFile(logFname,sprintf('Completed at: %s\n', datestr(now,'yyyy-mm-dd HH:MM:SS')))
+logRegInfoToFile(logFname,sprintf('Completed at: %s\n', datestr(now,'yyyy-mm-dd_HH-MM-SS')))
+
+% Copy log files into all reg-sub-dirs
+cellfun(@(x) copyfile(logFname,x), elastixDir)
+
 fprintf('\nFinished\n')
 
 
