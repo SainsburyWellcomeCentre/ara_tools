@@ -319,7 +319,7 @@ if ara2sample
         else
             if medFiltSample
                 nonFiltFname = fullfile(elastixDir{end},'result.tiff');
-                writeLoggingLine(logFname,sprintf('Tansforming the original dataset to generate a non-filtered image: %s\n',nonFiltFname))
+                writeLoggingLine(logFname,sprintf('Transforming the original dataset to generate a non-filtered image: %s\n',nonFiltFname))
                 RES = transformix(origVol,elastixDir{end});
                 save3Dtiff(RES,nonFiltFname);
             end
@@ -354,7 +354,7 @@ if sample2ara
         else
             if medFiltSample
                 nonFiltFname = fullfile(elastixDir{end},'result.tiff');
-                writeLoggingLine(logFname,sprintf('Tansforming the original dataset to generate a non-filtered image: %s\n',nonFiltFname))
+                writeLoggingLine(logFname,sprintf('Transforming the original dataset to generate a non-filtered image: %s\n',nonFiltFname))
                 RES = transformix(origVol,elastixDir{end});
                 save3Dtiff(RES,nonFiltFname);
             end
