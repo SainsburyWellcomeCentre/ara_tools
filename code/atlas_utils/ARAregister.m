@@ -297,28 +297,31 @@ else
     logRegInfoToFile(logFname,sprintf('Filtering of sample volume: medfilt3 with filter size %d\n',medFiltSize))
 end
 
-
-
+logRegInfoToFile(logFname,sprintf('\n\n**************  LOGGING  **************\n\n'))
 
 %We should now be able to proceed with the registration. 
 elastixDir = {};
 if ara2sample
-
-    fprintf('Beginning registration of ARA to sample\n')
     %make the directory in which we will conduct the registration
     elastixDir{end+1} = fullfile(regDir,S.ara2sampleDir);
     if ~mkdir(elastixDir{end})
-        fprintf('Failed to make directory %s\n',elastixDir{end})
+        fprintf('Failed to make directory %s',elastixDir{end})
     else
-        fprintf('Conducting registration in %s\n',elastixDir{end})
 
+        writeLoggingLine(logFname,sprintf('Beginning registration of ARA to sample\n'))
+        writeLoggingLine(logFname,sprintf('Conducting registration in %s\n',elastixDir{end}))
         [~,params]  = elastix(templateVol,sampleVol,elastixDir{end},-1,'paramstruct',elastixParams);
+        writeLoggingLine(logFname,sprintf('Finished registration of ARA to sample\n'))
+
         if ~iscell(params.TransformParameters)
-            fprintf('\n\n\t** Transforming the ARA to the sample failed (see above).\n\t** Check Elastix parameters and your sample volumes\n\n')
+            msg=sprintf('\n\n\t** Transforming the ARA to the sample failed (see above).\n\t** Check Elastix parameters and your sample volumes\n\n');
+            writeLoggingLine(logFname,msg)
         else
             if medFiltSample
+                nonFiltFname = fullfile(elastixDir{end},'result.tiff');
+                writeLoggingLine(logFname,sprintf('Tansforming the original dataset to generate a non-filtered image: %s\n',nonFiltFname))
                 RES = transformix(origVol,elastixDir{end});
-                save3Dtiff(RES,fullfile(elastixDir{end},'result.tiff'));
+                save3Dtiff(RES,nonFiltFname);
             end
         end
 
@@ -331,39 +334,42 @@ if ara2sample
 
 end
 
-if sample2ara
-    fprintf('Beginning registration of sample to ARA\n')
 
+if sample2ara
     %make the directory in which we will conduct the registration
     elastixDir{end+1} = fullfile(regDir,S.sample2araDir);
     if ~mkdir(elastixDir{end})
-        fprintf('Failed to make directory %s\n',elastixDir{end})
+        writeLoggingLine(logFname,sprintf('Failed to make directory %s\n',elastixDir{end}))
+
     else
-        fprintf('Conducting registration in %s\n',elastixDir{end})
+        writeLoggingLine(logFname,sprintf('Beginning registration of sample to ARA\n'))
+        writeLoggingLine(logFname,sprintf('Conducting registration in %s\n',elastixDir{end}))
         [~,params]=elastix(sampleVol,templateVol,elastixDir{end},-1,'paramstruct',elastixParams); 
+        writeLoggingLine(logFname,sprintf('Finished registration of sample to ARA\n'))
 
         if ~iscell(params.TransformParameters)
-            fprintf('\n\n\t** Transforming the sample to the ARA failed (see above).\n\t** Check Elastix parameters and your sample volumes\n')
-            fprintf('\t** Not initiating inverse transform.\n\n')
+            writeLoggingLine(logFname,sprintf('\n\n\t** Transforming the sample to the ARA failed (see above).\n\t** Check Elastix parameters and your sample volumes\n'))
+            writeLoggingLine(logFname,sprintf('\t** Not initiating inverse transform.\n\n'))
             return
         else
             if medFiltSample
-                % Tansform the original dataset so we get a non-filtered image
+                nonFiltFname = fullfile(elastixDir{end},'result.tiff');
+                writeLoggingLine(logFname,sprintf('Tansforming the original dataset to generate a non-filtered image: %s\n',nonFiltFname))
                 RES = transformix(origVol,elastixDir{end});
-                save3Dtiff(RES,fullfile(elastixDir{end},'result.tiff'));
+                save3Dtiff(RES,nonFiltFname);
             end
         end
-        % Copy the log file we have already made to this directory
 
     end
 
 if ~suppressInvertSample2ara
-        fprintf('Beginning inversion of sample to ARA\n')
+        writeLoggingLine(logFname,sprintf('Beginning inversion of sample to ARA\n'))
         inverted=invertElastixTransform(elastixDir{end});
         save(fullfile(elastixDir{end},S.invertedMatName),'inverted')
 
         %Now we can transform the sparse points files 
         invertExportedSparseFiles(inverted)
+        writeLoggingLine(logFname,sprintf('Finished inversion of sample to ARA\n'))
     end
     if S.removeMovingAndFixed
         delete(fullfile(elastixDir{end},[S.sample2araDir,'_moving*']))
@@ -371,7 +377,7 @@ if ~suppressInvertSample2ara
     end
 end
 
-logRegInfoToFile(logFname,sprintf('Completed at: %s\n', datestr(now,'yyyy-mm-dd_HH-MM-SS')))
+logRegInfoToFile(logFname,sprintf('\n\nCompleted at: %s\n', datestr(now,'yyyy-mm-dd_HH-MM-SS')))
 
 % Copy log files into all reg-sub-dirs
 cellfun(@(x) copyfile(logFname,x), elastixDir)
@@ -381,17 +387,22 @@ fprintf('\nFinished\n')
 
 
 
-function logRegInfoToFile(fname,dataToLog,flush)
+function logRegInfoToFile(fname,dataToLog,flush,echo)
     %Write string dataToLog to fname.
     %This little function is just to make it easier to log identity of the channel being registered
     %
     % fname - file to which we will log stuff
     % dataToLog - text to write
-    % flush - optional. False by default. If true, we wipe file "fname" and start over.
+    % flush - optional. False if missing or empty. If true, we wipe file "fname" and start over.
     %         i.e. if flush is false we append.
+    % echo - true by default. copies to screen the line written to file
 
-    if nargin<3
+    if nargin<3 || isempty(flush)
         flush=false;
+    end
+
+    if nargin<4
+        echo=true;
     end
 
     if flush
@@ -408,3 +419,24 @@ function logRegInfoToFile(fname,dataToLog,flush)
     fprintf(fid,dataToLog);
 
     fclose(fid);
+
+    if echo
+        fprintf(dataToLog)
+    end
+
+
+function writeLoggingLine(fname,messageToLog)
+    % Function writes a line to the logging file, fname, in the format:
+    % yyy-mm-dd_HH:MM:SS - INFO - mfilename - message
+    % echos to screen
+    % 
+    % messageToLog - a string. e.g. output of sprintf. It is chomped. 
+
+    fid = fopen(fname,'a+');
+    msg = sprintf('%s - INFO - %s - %s\n', ...
+        datestr(now,'yyyy-mm-dd_HH-MM-SS'), ...
+        mfilename, chomp(messageToLog));
+    fprintf(fid,msg);
+    fclose(fid);
+
+    fprintf(msg) % write to screen
