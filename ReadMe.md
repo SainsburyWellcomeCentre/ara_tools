@@ -56,4 +56,4 @@ See the [Wiki](https://github.com/BaselLaserMouse/ara_tools/wiki) for documentat
 
 
 ### Major changes
-1st April 2020 - Large changes to the directory structure of the downsampled stacks and the input arguments and behavior of `ARAregister`. See changelog. 
+1st April 2020 - Large changes to the directory structure of the downsampled stacks and the input arguments and behavior of `ARAregister`. See changelog. Look in the [releases](https://github.com/SainsburyWellcomeCentre/ara_tools/releases) if you want to just use the latest legacy version. 
