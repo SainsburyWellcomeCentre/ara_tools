@@ -1,5 +1,52 @@
 Changelog
 
+01/04/2020
+MAJOR CHANGES TO ARAregister - 
+* Downsampled stacks and registration directory are now separate. There can be multiple registration directories.
+The new folder layout for downsampled stacks is produced using the master branch of StitchIt as of 01/04/2020. 
+The directory layout of the sample dir is now:
+
+├── recipe_sample_1069012_200313_153543.yml
+├── acqLog_sample_1069012.txt
+├── downsampled_stacks
+│   ├── 025_micron
+│   │   ├── ds_sample_1069012_200313_153543_25_25_ch02.tif
+│   │   ├── ds_sample_1069012_200313_153543_25_25_ch02.txt
+│   │   ├── ds_sample_1069012_200313_153543_25_25_ch03.tif
+│   │   └── ds_sample_1069012_200313_153543_25_25_ch03.txt
+│   └── 050_micron
+│       ├── ds_sample_1069012_200313_153543_50_50_ch02.txt
+│       ├── ds_sample_1069012_200313_153543_50_50_ch02_red.tif
+│       ├── ds_sample_1069012_200313_153543_50_50_ch03.txt
+│       └── ds_sample_1069012_200313_153543_50_50_ch03_green.tif
+├── registration
+│   ├── reg_01__2020_03_23_a
+│   │   ├── registration_log.txt
+│   │   ├── ARA_to_sample
+│   │   │   ├── ARA_to_sample_parameters_1.txt
+│   │   │   ├── ARA_to_sample_parameters_2.txt
+│   │   │   ├── CMD
+│   │   │   ├── etc...
+│   │   │
+│   │   └── sample_to_ARA
+│   │       ├── CMD
+│   │       ├── IterationInfo.0.R0.txt
+│   │       ├── IterationInfo.0.R1.txt
+│   │       ├── etc...
+│   │
+│   └── reg_02__2020_03_23_b
+│       ├── ARA_to_sample
+│       │   ├── etc...
+│       │ 
+│       └── registration_log.txt
+
+** You will need to delete your local settings file in ~/.defaultSettings_ARAtools.yml before you run.
+You can choose which atlas pixel size to use for registration by editing that file. 
+
+* Please also see help ARAregister to learn more about the new options available. 
+
+
+
 
 3/07/2019
 The following changes may break previous behavior

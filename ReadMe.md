@@ -53,3 +53,7 @@ See the [Wiki](https://github.com/BaselLaserMouse/ara_tools/wiki) for documentat
 ### Further info
 * [ARA white paper from the Allen Institute](http://help.brain-map.org/download/attachments/2818171/MouseCCF.pdf)
 * [The latest CCF](http://download.alleninstitute.org/informatics-archive/current-release/)
+
+
+### Major changes
+1st April 2020 - Large changes to the directory structure of the downsampled stacks and the input arguments and behavior of `ARAregister`. See changelog. 
