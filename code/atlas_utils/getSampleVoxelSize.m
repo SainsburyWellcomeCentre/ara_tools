@@ -28,15 +28,16 @@ if isempty(dsFile)
 end
 
 %Get the voxel size from the file name
-if iscell(dsFile) && length(dsFile)>1
+if iscell(dsFile)
     dsFile=dsFile{1};
 end
-tok=regexp(dsFile,'.*_([012345]\d)_([012345]\d)_ch0\d','tokens');
+
+tok=regexp(dsFile,'.*_([012345]\d)_([012345]\d)_ch0\d\.','tokens');
 if isempty(tok)
     fprintf('%s - Can not find voxel size from file name %s\n', mfilename, dsFile), return
 end
-tok=tok{1};
 
+tok=tok{1};
 
 if length(tok)~=2
     fprintf('%s - Did not find two voxel size numbers in file name %s\n', mfilename, dsFile), return
