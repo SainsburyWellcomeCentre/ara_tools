@@ -1,7 +1,7 @@
 function dsDir = getDownSampledDir(expDir)
 % ARA helper function. Returns downsampled stack file name when called from experiment root dir
 %
-% function dsDir = getDownSampledDir(expDir)
+% function dsDir = aratools.getDownSampledDir(expDir)
 %
 % Purpose
 % Return all downsampled directory names in the current sample's 
@@ -20,7 +20,7 @@ function dsDir = getDownSampledDir(expDir)
 % Examples
 % 1. 
 % >> cd XY123_121212
-% >> getDownSampledDir
+% >> aratools.getDownSampledDir
 % ans =
 %   dsXY123_25_25_02.mhd
 %
@@ -44,10 +44,8 @@ if strcmp(expDir,S.downSampledDir)
     expDir=['.',filesep];
 end
 
-
 downsampleDir.name = fullfile(S.downSampledDir, sprintf('%03d_micron',S.ARAsize));
 downsampleDir.folder = expDir;
-
 
 if length(downsampleDir)==0
     fprintf('%s - Can not find directory "%s" in sample directory %s\n', mfilename, downsampleDir,pwd)
@@ -62,5 +60,6 @@ if length(downsampleDir)>1
     fprintf('NOT SET UP TO DEAL WITH THIS YET\n')
     dsDir=[];
 end
+
 
 dsDir = downsampleDir.name;
