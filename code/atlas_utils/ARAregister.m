@@ -435,7 +435,7 @@ function writeLoggingLine(fname,messageToLog)
     fid = fopen(fname,'a+');
     msg = sprintf('%s - INFO - %s - %s\n', ...
         datestr(now,'yyyy-mm-dd_HH-MM-SS'), ...
-        mfilename, chomp(messageToLog));
+        mfilename, strip(messageToLog));
     fprintf(fid,msg);
     fclose(fid);
 
