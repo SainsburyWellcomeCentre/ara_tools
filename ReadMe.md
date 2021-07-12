@@ -29,15 +29,16 @@ e.g. you won't need the registration stuff to plot cells.
 ### Dependencies
 ARA tools depends on the following MATLAB packages and requires at least R2016b. 
 Clone them and add to your path.
-
-- [Han 2018 MATLAB cell tracing code](https://github.com/BaselLaserMouse/HanSingleCell)
+- [MelastiX](https://github.com/raacampbell/matlab_elastix) (if you need to register brains to the ARA)
+- [yaml matlab](https://github.com/raacampbell/yamlmatlab)
 - [Allen API](https://github.com/BaselLaserMouse/AllenBrainAPI)
 - [JSONlab](http://www.mathworks.com/matlabcentral/fileexchange/33381-jsonlab--a-toolbox-to-encode-decode-json-files-in-matlab-octave)
 - [settings handler](https://github.com/raacampbell/settings_handler)
-- [yaml matlab](https://github.com/raacampbell/yamlmatlab)
 - [stitchit](https://github.com/BaselLaserMouse/StitchIt)
-- [MelastiX](https://github.com/raacampbell/matlab_elastix) (if you need to register brains to the ARA)
-- [matlab-tree](https://github.com/raacampbell/matlab-tree)
+- [matlab-tree](https://github.com/raacampbell/matlab-tree) (Only for tracing axon trees)
+
+### Also relevant
+- [Han 2018 MATLAB cell tracing code](https://github.com/BaselLaserMouse/HanSingleCell)
 
 
 ### Using the toolbox
