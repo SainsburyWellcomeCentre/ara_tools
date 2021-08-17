@@ -1,5 +1,19 @@
 Changelog
 
+17/08/2021
+Allow for all downsampled channels to be transformed in the sample2ARA directory using the calculated
+transformation. This is done with this new form of calling ARAregister:
+  ARAregister('channel',4,'transformAllChannels',true)
+ or - 
+  ARAregister(transformAllChannels',true)
+
+You may also transform named downsampled stacks as follows:
+>> cd /mnt/data/mySampleDir
+>> dsFile='downsampled_stacks/025_micron/ds_XY_sample_25_25_ch02_chan_2_red.tif'
+>> regDir='registration/reg_01__2021_08_16_a/sample2ARA/';
+>> aratools.applyRegToStackFile(dsFile,regDir)
+
+
 01/04/2020
 MAJOR CHANGES TO ARAregister - 
 * Downsampled stacks and registration directory are now separate. There can be multiple registration directories.

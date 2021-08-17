@@ -44,6 +44,9 @@ function ARAregister(varargin)
 %             than 1, then the sample image is filtered by this amount instead. 
 %             NOTE: The *unfiltered* result image will appear in the registration directory 
 %             as "result.tiff".
+% 'transformAllChannels' - If true, we run the sample2ARA transform on all available channels 
+%            once the registration is done. The output saved as tiffs in sample2ARA. The channel
+%            used for registration is the "result" file. False by default.
 % 'action' - If a registration already has been done, then ARAregister does nothing. This is 
 %            over-ridden by the "action" argument:
 %            'delete' -- deletes existing registrations (WITH NO CONFIRMATION) and replace all with a new one. 
@@ -72,6 +75,10 @@ function ARAregister(varargin)
 % - Run registration with a filtered sample stack (this may improve the registration significantly)
 % >> ARAregister('medFiltSample',true)
 %
+% - Register using channel 4 then transform all remaining channels sample2ara channels using the same transform
+%  ARAregister('channel',4,'transformAllChannels',true)
+%. (to do this manually for a downsampled stack see aratools.applyRegToStackFile)
+% 
 % Rob Campbell - Basel, 2015
 %
 % Also see from this repository:
@@ -81,6 +88,7 @@ function ARAregister(varargin)
 % 2020/03/18 - Modifies the parameters automaticaly for the correct voxel size. It does this
 %              by loading them into a structure, altering this, then feeding this into the 
 %              elastix function.
+% 2021/08/17 - Provides for automatic transformation of all remaining channels.
 
 
 %Parse input arguments
@@ -95,6 +103,7 @@ params.addParamValue('sample2ara', true, @(x) islogical(x) || x==1 || x==0)
 params.addParamValue('channel', [], @(x) isnumeric(x) && isscalar(x))
 params.addParamValue('suppressInvertSample2ara', false, @(x) islogical(x) || x==1 || x==0)
 params.addParamValue('medFiltSample', false, @(x) islogical(x) || (isint(x) && x>=0))
+params.addParamValue('transformAllChannels', false, @(x) islogical(x) || x==1 || x==0)
 params.addParamValue('action', 'none', @(x) ischar(x) && (strcmpi('none',x) || strcmpi('delete',x) || strcmpi('keep',x) || strcmpi('tidy',x)))
 
 
@@ -113,6 +122,7 @@ channel = params.Results.channel;
 suppressInvertSample2ara = params.Results.suppressInvertSample2ara;
 elastixParams = params.Results.elastixParams;
 medFiltSample = params.Results.medFiltSample;
+transformAllChannels = params.Results.transformAllChannels;
 action = lower(params.Results.action);
 
 if ~exist(downsampleDir,'dir')
@@ -195,17 +205,20 @@ for ii=1:length(elastixParams)
 end
 
 %Figure out which atlas to use
-dsFile = aratools.getDownSampledFile;
+dsFile = aratools.getDownSampledFile; %This cell array will later be replaced by a string that is the channel to register
+nonRegChannels = dsFile; % This cell array will later have the channel to register removed
+
 if isempty(dsFile)
     return %warning message already issued
 end
+
 
 if iscell(dsFile)
     if length(dsFile) == 1
         dsFile = dsFile{1};
     elseif ~isempty(channel)
         % Find the selected channel in the list of file names
-        tok=cellfun(@(x) regexp(x,'.+_\d+_\d+_ch(\d+).+','tokens'),dsFile,'UniformOutput',false)
+        tok=cellfun(@(x) regexp(x,'.+_\d+_\d+_ch(\d+).+','tokens'),dsFile,'UniformOutput',false);
         matchChans = cellfun(@(x) strcmp(x,sprintf('%02d',channel)),[tok{:}]);
         if ~any(matchChans)
             % Requested channel not found
@@ -245,6 +258,17 @@ if iscell(dsFile)
     end
 
 end
+
+
+
+% If transformAllChannels is true we will, after the registration, run the 
+% transformation all available channels for the sample2ARA data.
+if transformAllChannels && length(nonRegChannels)>1
+    nonRegChannels = nonRegChannels(~strcmp(dsFile,nonRegChannels));
+else
+    nonRegChannels = [];
+end 
+
 
 fprintf('\nRunning registration on volume %s\n\n',dsFile)
 
@@ -358,9 +382,18 @@ if sample2ara
                 RES = transformix(origVol,elastixDir{end});
                 save3Dtiff(RES,nonFiltFname);
             end
-        end
-
     end
+
+    if transformAllChannels
+        fprintf('\n\nTransforming non-registered channels to ARA space using registrations in %s\n',elastixDir{end})
+        for ii = 1:length(nonRegChannels)
+            tFile = fullfile(downsampleDir,nonRegChannels{ii});
+            aratools.applyRegToStackFile(tFile,elastixDir{end});
+        end
+    end %transformAllChannels
+
+end % sample2ara
+
 
 if ~suppressInvertSample2ara
         writeLoggingLine(logFname,sprintf('Beginning inversion of sample to ARA\n'))
@@ -375,7 +408,7 @@ if ~suppressInvertSample2ara
         delete(fullfile(elastixDir{end},[S.sample2araDir,'_moving*']))
         delete(fullfile(elastixDir{end},[S.sample2araDir,'_target*']))
     end
-end
+end %suppressInvertSample2ara
 
 logRegInfoToFile(logFname,sprintf('\n\nCompleted at: %s\n', datestr(now,'yyyy-mm-dd_HH-MM-SS')))
 
