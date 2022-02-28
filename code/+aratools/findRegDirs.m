@@ -27,7 +27,7 @@ if ~exist(regDir,'dir')
     return
 end
 
-% Now we automatically generate a directory name into which we will do the registration
+% Get list of directories that exist in this path
 contents = dir(regDir);
 subDirNames = {contents.name};
 existingRegDirs = subDirNames([contents.isdir]);
